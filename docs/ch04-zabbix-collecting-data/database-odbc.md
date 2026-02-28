@@ -396,6 +396,172 @@ This approach reduces database load and improves template scalability.
 
 ---
 
+Excellent catch.
+
+If you’re writing a serious Zabbix book, **`db.odbc.discovery` absolutely must be covered**. Otherwise you’re only explaining half of the ODBC story.
+
+Right now your chapter explains:
+
+* `db.odbc.select`
+* `db.odbc.get`
+* JSON + dependent items
+
+But you did not explain the native discovery key:
+
+```
+db.odbc.discovery[]
+```
+
+Let’s fix that properly — and in a way that fits your book tone (structured, production-aware, not slide-style).
+
+Below is a clean, book-ready section you can insert after the LLD section.
+
+---
+
+## Native ODBC Low-Level Discovery (`db.odbc.discovery`)
+
+In addition to `db.odbc.select[]` and `db.odbc.get[]`, Zabbix provides a dedicated key for discovery:
+
+```
+db.odbc.discovery[]
+```
+
+This key is designed specifically for Low-Level Discovery (LLD) and returns data in the format required by Zabbix discovery rules.
+
+While `db.odbc.get[]` can be combined with dependent items to implement scalable discovery patterns, `db.odbc.discovery[]` offers a simpler and more direct approach for structured environments.
+
+---
+
+### How It Works
+
+The key format:
+
+```
+db.odbc.discovery[unique_name,DSN]
+```
+
+The SQL query must return columns that correspond to LLD macro names.
+
+Example:
+
+```sql
+SELECT table_name AS "{#TABLE}"
+FROM information_schema.tables
+WHERE table_schema = 'shop_db';
+```
+
+This generates discovery data like:
+
+```json
+[
+  {"{#TABLE}":"orders"},
+  {"{#TABLE}":"customers"},
+  {"{#TABLE}":"products"}
+]
+```
+
+Each row becomes one discovered entity.
+
+---
+
+### When to Use `db.odbc.discovery`
+
+Use native discovery when:
+
+* The discovery query is lightweight.
+* The returned dataset is small.
+* You do not need additional processing logic.
+* You prefer simplicity over maximum optimization.
+
+It is particularly suitable for:
+
+* Discovering database tables
+* Discovering schemas
+* Discovering replication slots
+* Discovering logical entities with stable structure
+
+---
+
+### When to Prefer `db.odbc.get` + Dependent LLD
+
+In larger environments, the preferred scalable approach is:
+
+1. Master item → `db.odbc.get`
+2. Dependent discovery rule
+3. Dependent item prototypes
+
+This approach reduces database load because:
+
+* The SQL query executes only once.
+* Multiple items reuse the same dataset.
+* Poller usage is minimized.
+
+If you use `db.odbc.discovery[]`, each discovery rule executes its own SQL query.
+
+In small deployments, this difference is negligible.
+In large-scale systems, it becomes significant.
+
+---
+
+## Performance Considerations for Discovery
+
+Discovery rules execute periodically.
+
+If a discovery query:
+
+* Scans large metadata tables
+* Executes heavy joins
+* Runs too frequently
+
+it can introduce unnecessary load.
+
+Best practices:
+
+* Run discovery at longer intervals (e.g., 1h or 24h)
+* Keep discovery queries simple
+* Avoid scanning large operational tables
+* Prefer metadata sources like `information_schema`
+
+Discovery should detect structure changes, not operational metrics.
+
+---
+
+## Common Mistake with `db.odbc.discovery`
+
+A frequent error is returning columns without properly formatted LLD macros.
+
+Incorrect:
+
+```sql
+SELECT table_name FROM information_schema.tables;
+```
+
+Correct:
+
+```sql
+SELECT table_name AS "{#TABLE}"
+FROM information_schema.tables;
+```
+
+The alias must match the macro format exactly.
+
+---
+
+## Strategic Guidance
+
+For production template design:
+
+* Use `db.odbc.discovery[]` for structural discovery.
+* Use `db.odbc.get[]` for scalable metric collection.
+* Combine both methods when appropriate.
+
+Discovery defines *what* exists.
+Metric items define *how it behaves*.
+
+Keeping those responsibilities separate improves template clarity and scalability.
+
+---
+
 ## Performance and Scalability Considerations
 
 ODBC queries execute real SQL. They consume database resources.
@@ -627,7 +793,6 @@ When used correctly, ODBC becomes a strategic observability tool. When misused,
 it becomes a silent performance risk.
 
 The difference lies not in the technology, but in the rigor of its implementation.
-
 
 
 ## Questions
