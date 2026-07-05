@@ -374,10 +374,10 @@ groups` we will only be able to see the group `HG_All_Linux_Servers`.
 This table outlines the combined, **effective rights** for the user
 **`test_junior`** (who is a member of both User Groups).
 
-| Host Group (HG)             | Permission via 'Junior Monitoring' | Permission via 'Critical Exclusion' | **Effective Permission** | Outcome                                 |
-| --------------------------- | ---------------------------------- | ----------------------------------- | ------------------------ | --------------------------------------- |
-| **`HG_All_Linux_Servers`**  | Somente leitura                    | *No Explicit Rule*                  | **Somente leitura**      | Access to view data is **Allowed**.     |
-| **`HG_Critical_Databases`** | Somente leitura                    | Negar                               | **Negar**                | Access is **Blocked** (host is hidden). |
+| Host Group (HG)             | Permission via 'Junior Monitoring' | Permission via 'Critical Exclusion' | **Effective Permission** | Outcome                                            |
+| --------------------------- | ---------------------------------- | ----------------------------------- | ------------------------ | -------------------------------------------------- |
+| **`HG_All_Linux_Servers`**  | Somente leitura                    | *Nenhuma regra explícita*           | **Somente leitura**      | O acesso para visualizar os dados é **Permitido**. |
+| **`HG_Critical_Databases`** | Somente leitura                    | Negar                               | **Negar**                | O acesso é **Blocked** (o host está oculto).       |
 
 
 ## Conclusão
