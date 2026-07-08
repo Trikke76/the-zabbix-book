@@ -19,41 +19,47 @@ prints to standard output becomes the item value. No agent is required
 on the monitored host, the script runs entirely on the Zabbix server
 or proxy machine.
 
+---
 
 ## How It Works
 
-When the item is due for collection, Zabbix looks up the ExternalScripts
-directory (configured in zabbix_server.conf or zabbix_proxy.conf) and
+When the item is due for collection, Zabbix looks up the `ExternalScripts`
+directory (configured in Zabbix server or proxy config files) and
 forks a new process to execute the named script. The script runs under
 the same OS user as the Zabbix server or proxy process, so file
 permissions and environment variables must be set up accordingly.
 The item key follows this syntax:
 
-```ini
-script[<parameter1>,<parameter2>,...]
-```
+!!! info
+
+    ```ini
+    script[<parameter1>,<parameter2>,...]
+    ```
 
 If no parameters are needed, either of the following forms is
 acceptable:
 
-```ini
-script
-script[]
-```
+!!! info
+
+    ```ini
+    script
+    script[]
+    ```
 
 Parameters are passed to the script as individual quoted command line
-arguments. Zabbix macros such as {HOST.CONN} or {HOST.NAME} can be used
-inside parameter values, they are resolved before the script is
+arguments. Zabbix macros such as `{HOST.CONN}` or `{HOST.NAME}` can be used
+inside parameter values, those are resolved before the script is
 called. This means you can write a single generic script and rely on
 macros to supply the host-specific details at runtime.
 
-???+ note
+!!! warning "When using Zabbix proxies"
 
     When a host is monitored through a Zabbix proxy, the
     external check script is executed by the proxy, not by the central
     server. Make sure your scripts are deployed on every machine that needs
     to run them.
 
+---
 
 ## Return Value and Error Handling
 
@@ -72,7 +78,6 @@ enough for any reasonable monitoring purpose.
 - For text-type items (character, log, or text), a non-empty stderr
   output alone does not cause the item to become unsupported.
 
-
 !!!+ warning
 
     Every external check creates a new forked process. Running dozens of them
@@ -81,12 +86,14 @@ enough for any reasonable monitoring purpose.
     another way, and keep collection intervals as long as your monitoring
     requirements allow.
 
+---
+
 ## Practical example : Counting Logged-In Users
 
 To show you an easy example, let's build something you can try right now on the
 machine where Zabbix is installed. The script will count how many users are
 currently logged into the local system, using the who command, which is part of the
-standard coreutils package present on every installation.
+standard coreutils package present on every distribution.
 
 You will create the item on the Zabbix server host itself the one
 that already appears in your host list as "Zabbix server". The script
@@ -99,34 +106,40 @@ Create the file 'check_logged_users.sh' in the ExternalScripts directory.
 On most systems this is **/usr/lib/zabbix/externalscripts/** you can check your
 zabbix_server.conf if unsure:
 
-``` bash
-#!/bin/bash
-# Returns the number of users currently logged into the system.
-# No arguments needed.
-who | wc -l
-```
+???+ example
+
+    ``` bash
+    #!/bin/bash
+    # Returns the number of users currently logged into the system.
+    # No arguments needed.
+    who | wc -l
+    ```
 
 That is the entire script, four lines including the comments. The who
-command lists one line per active login session; wc -l counts those
+command lists one line per active login session; `wc -l` counts those
 lines. 
 
 Make the script executable:
 
-``` bash
-chmod +x /usr/lib/zabbix/externalscripts/check_logged_users.sh
-```
+???+ example
+
+    ``` bash
+    chmod +x /usr/lib/zabbix/externalscripts/check_logged_users.sh
+    ```
 
 You can verify it works straight away by running it manually as the
 zabbix user:
 
-``` bash
-sudo -u zabbix /usr/lib/zabbix/externalscripts/check_logged_users.sh
-```
+???+ example
+
+    ``` bash
+    sudo -u zabbix /usr/lib/zabbix/externalscripts/check_logged_users.sh
+    ```
 
 ### Create the Item in Zabbix
 
 Now that we have our script we need to create an item in Zabbix as our final
-step. In the Zabbix web interface, go to `Data collection → Hosts`, open the
+step. In the Zabbix web interface, go to **Data collection** → **Hosts**, open the
 Zabbix server host, and add a new item with these settings:
 
 | Field                  | Value                      |
@@ -138,18 +151,16 @@ Zabbix server host, and add a new item with these settings:
 | Units                  | users                      |
 | Update interval        | 1m                         |
 
-
 ### Check the Result
 
-Save the item and navigate to `Monitoring → Latest data`. Within a minute
-you should see a value like 2 ( depending on your system ) appear next to your
+Save the item and navigate to **Monitoring** → **Latest data**. Within a minute
+you should see a value like `2` (depending on your system) appear next to your
 new item, reflecting the number of active sessions on the Zabbix server at that
 moment. Open a second terminal to SSH in, wait for the next collection cycle,
-and watch the number go up to 3 ( or 1 higher then previous number ). Close it,
+and watch the number go up to `3` (or 1 higher then previous number). Close it,
 and it comes back down. From here you could add a trigger to alert when the count
 exceeds an expected threshold, useful for detecting unexpected logins on a
 production server.
-
 
 !!! note "A word of wisdom when it comes to scripts"
 
@@ -162,14 +173,24 @@ production server.
     possible. If your script needs a PhD thesis to maintain, it probably
     deserves to be a proper Zabbix plugin instead.
 
+---
+
 ## Conclusion
 
 External checks give you an escape hatch from the boundaries of built-in Zabbix
-item types. You write a script, drop it in the ExternalScripts directory,
+item types. You write a script, drop it in the `ExternalScripts` directory,
 and reference it with a standard item key. Zabbix handles scheduling, macro
 substitution, and value storage, you only have to worry about what the script
 does. Used sensibly and sparingly, external checks are one of the most powerful
 extensibility mechanisms Zabbix offers.
+
+The example we built here is very basic, but it demonstrates the principle.
+When the output of the command is complex, you can ofcourse parse it using
+preprocessing steps, or even return JSON and use the `JSONPath` preprocessor to 
+extract the values you need. The sky is the limit, as long as you keep your scripts
+simple, fast, and reliable.
+
+---
 
 ## Questions
 
@@ -185,6 +206,8 @@ extensibility mechanisms Zabbix offers.
 - Your script writes a warning message to stderr but also returns a valid numeric value
   on stdout. The item type is set to Numeric (unsigned). Will the item become unsupported?
   What would happen if the item type were set to Text instead?
+
+---
 
 ## Useful URLs
 

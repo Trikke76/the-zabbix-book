@@ -6,9 +6,15 @@ tags: [advanced]
 ---
 
 # Database checks via Zabbix agent 2
-Now that we have covered database monitoring by ODBC, you might have some security questions. Because with ODBC, you will always have to open up your database for remote connections by our Zabbix server or proxy. For some environments, this might be out of the question. ODBC monitoring also requires additional tooling to be installed, which is something you will need to maintain.
 
-The Zabbix agent 2 however, comes with built-in functionality to monitor some of the most popular SQL and no-SQL databases.
+Now that we have covered database monitoring by ODBC, you might have some 
+security questions. Because with ODBC, you will always have to open up your 
+database for remote connections by our Zabbix server or proxy. For some 
+environments, this might be out of the question. ODBC monitoring also requires 
+additional tooling to be installed, which is something you will need to maintain.
+
+The Zabbix agent 2 however, comes with built-in functionality to monitor some 
+of the most popular SQL and no-SQL databases.
 - MariaDB
 - MySQL
 - PostgreSQL
@@ -17,54 +23,78 @@ The Zabbix agent 2 however, comes with built-in functionality to monitor some of
 - Redis
 - MongoDB
 
-The great part about using the Zabbix agent for monitoring your database is, you most likely already have the Zabbix agent installed on the Windows or Linux server running that database. Since the Zabbix agent is running on the local machine, the Zabbix agent can now be used to connect using localhost (127.0.0.1) to the database.
+The great part about using the Zabbix agent for monitoring your database is, you 
+most likely already have the Zabbix agent installed on the Windows or Linux 
+server running that database. Since the Zabbix agent is running on the local 
+machine, the Zabbix agent can now be used to connect using localhost (127.0.0.1) 
+to the database.
 
 ![Zabbix ODBC vs Agent Database connection*](ch04.xx-odbc-vs-agent.png){ align=center }
 *4.x Zabbix ODBC vs Agent Database connection*
 
+---
 
 ## Plugin installation
-It's important to note that for Zabbix agent 2 to support database monitoring, you might have to install some additional plugin packages. This is the case specifically for:
+
+It's important to note that for Zabbix agent 2 to support database monitoring, 
+you might have to install some additional plugin packages. This is the case 
+specifically for:
 
 - PostgreSQL
 - Microsoft SQL
 - MongoDB
 
-To install the packages on Linux is not too much additional work, as we should already have the Zabbix repository available. Simply issues the following command to install the additional package(s) and you should be ready to go.
+To install the packages on Linux is not too much additional work, as we should 
+already have the Zabbix repository available. Simply issues the following 
+command to install the additional package(s) and you should be ready to go.
 
 !!! info "Install Zabbix agent 2 database monitoring plugins"
 
-    RHEL-based:
-
-    ``` dnf install zabbix-agent2-plugin-mongodb zabbix-agent2-plugin-mssql zabbix-agent2-plugin-postgresql
+    Red Hat
+    ```bash
+    dnf install zabbix-agent2-plugin-mongodb zabbix-agent2-plugin-mssql zabbix-agent2-plugin-postgresql
     ```
 
-    Debian based:
-
-    ``` apt install zabbix-agent2-plugin-mongodb zabbix-agent2-plugin-mssql zabbix-agent2-plugin-postgresql
+    SUSE
+    ```bash
+    zypper install zabbix-agent2-plugin-mongodb zabbix-agent2-plugin-mssql zabbix-agent2-plugin-postgresql
     ```
 
-    SUSE:
-
-    ``` zypper in zabbix-agent2-plugin-mongodb zabbix-agent2-plugin-mssql zabbix-agent2-plugin-postgresql
+    Debian
+    ```bash
+    apt install zabbix-agent2-plugin-mongodb zabbix-agent2-plugin-mssql zabbix-agent2-plugin-postgresql
     ```
 
-On Windows we do have some additional steps, as we need to download an additional MSI. We can find the MSI at the following URL.
+On Windows we do have some additional steps, as we need to download an additional
+MSI. We can find the MSI at the following URL.
 
 [https://cdn.zabbix.com/zabbix/binaries/stable/](https://cdn.zabbix.com/zabbix/binaries/stable/)
 
-It's also possible to download the packages from [https://www.zabbix.com/download_agents?](https://www.zabbix.com/download_agents?). At this website simply select `OS Distribution` as `Windows` and at `Encryption` select `No encryption`. This will show you the `Zabbix agent2 plugins vx.x.x` MSI download link for your selected Windows version.
+It's also possible to download the packages from [https://www.zabbix.com/download_agents?](https://www.zabbix.com/download_agents?).
+At this website simply select **OS Distribution** as **Windows** and for
+**Encryption** select **No encryption**. This will show you the **Zabbix agent2 
+plugins vx.x.x** MSI download link for your selected Windows version.
 
-We are going to assume you have already installed the Zabbix agent 2 and the plugins on your server. If you do not know how, check out the previous part of this chapter titled `Zabbix Agent installation and Passive monitoring` and the steps above.
+We are going to assume you have already installed the Zabbix agent 2 and the
+plugins on your server. If you do not know how, check out the previous part of
+this chapter: [Zabbix Agent installation and Passive monitoring](./zabbix-agent-passive.md) and the
+steps above.
+
+---
 
 ## Setting up Microsoft SQL monitoring
-Let's have a look at how to monitor a Microsoft SQL server using the Zabbix agent 2 database monitoring. Before we do this however, make sure to create a new user dedicated to monitoring in your Microsoft SQL server. This user will have limited permissions, to make sure that if the user becomes compromised, any attacker does not have a large vector of attack using the account.
+
+Let's have a look at how to monitor a Microsoft SQL server using the Zabbix 
+agent 2 database monitoring. Before we do this however, make sure to create a 
+new user dedicated to monitoring in your Microsoft SQL server. This user will 
+have limited permissions, to make sure that if the user becomes compromised, 
+any attacker does not have a large vector of attack using the account.
 
 !!! info "Create zbx_monitor user"
 
     SQL server command:
 
-    ```
+    ```sql
     CREATE LOGIN zbx_monitor WITH PASSWORD = 'change-the-password-here'
     GRANT VIEW SERVER PERFORMANCE STATE TO zbx_monitor
     GRANT VIEW ANY DEFINITION TO zbx_monitor
@@ -77,40 +107,75 @@ Let's have a look at how to monitor a Microsoft SQL server using the Zabbix agen
     GO
     ```
 
-For the default setup with a Microsoft SQL server, things are fairly simple. First, we go to `Data collection` | `Hosts` and create a new host for our Windows server.
+For the default setup with a Microsoft SQL server, things are fairly simple. 
+First, we go to **Data collection** → **Hosts** and create a new host for our 
+Windows server.
 
 ![Host creation - Windows server SQL](ch04.x-host-creation-windows-server-sql.png){ align=center }
 
 *4.x Host creation - Windows server SQL*
 
-With the host created, it's important to note here we used the template `MSSQL by Zabbix agent 2`. This is a default template provided by Zabbix which will already include most of the important statistics you'd need monitoring a Microsoft SQL server. It's possible to monitor SQL servers using the Zabbix agent in both `passive` and `active` mode. If you'd like to use `active` mode just clone template `MSSQL by Zabbix agent 2` to `MSSQL by Zabbix agent 2 active` and change all `item types` to `Zabbix agent (active)`.
+With the host created, it's important to note here we used the template 
+*MSSQL by Zabbix agent 2*. This is a default template provided by Zabbix which 
+will already include most of the important statistics you'd need monitoring a 
+Microsoft SQL server. It's possible to monitor SQL servers using the Zabbix 
+agent 2 in both *passive* and *active* mode. If you'd like to use *active* mode 
+just clone template *MSSQL by Zabbix agent 2* to *MSSQL by Zabbix agent 2 **active***
+and change all *item types* to *Zabbix agent (active)*.
 
-In the end it does not matter if you use a passive or active agent, as long as you have the agent connection setup we can do the next step. We need to configure our Zabbix agent to connect to the database server via the network. We do this using the macros on the host.
+In the end it does not matter if you use a passive or active agent, as long as
+you have the agent connection setup we can do the next step. We need to configure
+our Zabbix agent to connect to the database server via the network. We do this
+using the macros on the host.
 
 ![Windows server SQL host macros](ch04.x-windows-server-sql-macros.png){ align=center }
 
 *4.x Windows server SQL host macros*
 
-Since the agent is installed on the server running Microsoft SQL, we can simply connect to `localhost` or `127.0.0.1`. That means the connection from the Zabbix agent towards the Microsoft SQL server never leaves the server itself and we do not need to expose our SQL server port to the network for our Zabbix server or proxy. Combined with Zabbix agent active mode, a limited Microsoft SQL user and agent encryption, we can guarantee a secure setup that is ready for high-risk environments like banks, hospitals, air traffic and even military applications. This is the biggest advantage of using the Zabbix agent 2 database monitoring, compared to ODBC.
+Since the agent is installed on the server running Microsoft SQL, we can simply
+connect to `localhost` or `127.0.0.1`. That means the connection from the Zabbix
+agent towards the Microsoft SQL server never leaves the server itself and we do
+not need to expose our SQL server port to the network for our Zabbix server or
+proxy. Combined with Zabbix agent active mode, a limited Microsoft SQL user and
+agent encryption, we can guarantee a secure setup that is ready for high-risk
+environments like banks, hospitals, air traffic and even military applications.
+This is the biggest advantage of using the Zabbix agent 2 database monitoring,
+compared to ODBC.
 
-Once we fill out the `{$MSSQL.USER}`, `{$MSSQL.PASSWORD}` and `{$MSSQL.URI}` macros, the Zabbix agent should be able to connect to our SQL server. Navigating to `Monitoring` | `Latest data` should now show us a bunch of data from the SQL server marking the successful configuration of our monitoring.
+Once we fill out the `{$MSSQL.USER}`, `{$MSSQL.PASSWORD}` and `{$MSSQL.URI}` 
+macros, the Zabbix agent should be able to connect to our SQL server. Navigating 
+to **Monitoring** → **Latest data** should now show us a bunch of data from the
+SQL server marking the successful configuration of our monitoring.
 
 ![Microsoft SQL server data](ch04.x-windows-server-sql-data.png){ align=center }
 
 *4.x Microsoft SQL server data*
 
-???+ note
-    Keep in mind that your Microsoft SQL server might be using a different port for connecting the the SQL server. Make sure to specify the correct port when setting up the `{$MSSQL.URI}` macro, you can find the port in the SQL server configuration.
+???+ warning "Microsoft SQL server port configuration"
+
+    Keep in mind that your Microsoft SQL server might be using a different port
+    for connecting the the SQL server. Make sure to specify the correct port 
+    when setting up the `{$MSSQL.URI}` macro, you can find the port in the 
+    SQL server configuration.
 
 ### Custom Microsoft SQL queries
-Let's say the Zabbix template isn't going to fit every single thing you might want to monitor on your SQL server. How do you add some custom monitoring to the Zabbix agent 2 database monitoring? With ODBC we could simply add the query to the frontend and ODBC would execute it for us. For the Zabbix agent, there are some additional steps required. 
 
-First, let's make sure our agent configuration is setup correctly. Whenever we install the Zabbix agent 2 with any of the plugins, there will be additional configuration files located in the zabbix_agent2.d folder.
+Let's say the Zabbix template isn't going to fit every single thing you might 
+want to monitor on your SQL server. How do you add some custom monitoring to the
+Zabbix agent 2 database monitoring? With ODBC we could simply add the query to
+the frontend and ODBC would execute it for us. For the Zabbix agent, there are
+some additional steps required. 
+
+First, let's make sure our agent configuration is setup correctly. Whenever we
+install the Zabbix agent 2 with any of the plugins, there will be additional 
+configuration files located in the zabbix_agent2.d folder.
 
 - *Windows*: `C:\Program Files\Zabbix Agent 2\zabbix_agent2.d\`
 - *Linux*: `/etc/zabbix/zabbix_agent2.d/`
 
-For our Microsoft SQL server running on Windows we are looking for the file `C:\Program Files\Zabbix Agent 2\zabbix_agent2.d\mssql.conf`. Open the file and edit the following two lines.
+For our Microsoft SQL server running on Windows we are looking for the file 
+`C:\Program Files\Zabbix Agent 2\zabbix_agent2.d\mssql.conf`. Open the file
+and edit the following two lines.
 
 !!! info "mssql.conf plugin configuration file edit"
 
@@ -139,9 +204,11 @@ For our Microsoft SQL server running on Windows we are looking for the file `C:\
     Plugins.MSSQL.CustomQueriesEnabled=true
     ```
 
-We set the folder to `C:\Program Files\Zabbix Agent 2\Custom Queries\MSSQL` and that's where we will place our new SQL files. Make sure to create the folder in that path and let's create the following file in the new folder.
+We set the folder to `C:\Program Files\Zabbix Agent 2\Custom Queries\MSSQL` and 
+that's where we will place our new SQL files. Make sure to create the folder in
+that path and let's create the following file in the new folder.
 
-!!! info "mssql.conf plugin configuration file edit"
+!!! example "mssql.conf plugin configuration file edit"
 
     C:\Program Files\Zabbix Agent 2\Custom Queries\MSSQL\sleeping_sessions.sql
 
@@ -150,7 +217,11 @@ We set the folder to `C:\Program Files\Zabbix Agent 2\Custom Queries\MSSQL` and 
     FROM sys.dm_exec_sessions WHERE status = 'sleeping';
     ```
 
-With the edits made and the folders and file created, we can restart the `Zabbix agent 2` service and navigate to the Zabbix frontend. Here we will create a new item to monitor this `sleeping sessions` query we created. Navigate to `Data collection` | `Hosts` and go to `Items`. Then click on `Create item`. Preferably you would add the item to a template, but for now let's create it here.
+With the edits made and the folders and file created, we can restart the 
+**Zabbix agent 2** service and navigate to the Zabbix frontend. Here we will 
+create a new item to monitor this `sleeping_sessions.sql` query we created. Navigate 
+to **Data collection** → **Hosts** and go to **Items**. Then click on **Create item**. 
+Preferably you would add the item to a template, but for now let's create it here.
 
 ![Microsoft SQL server custom query](ch04.x-windows-server-sql-custom-query.png){ align=center }
 
@@ -158,7 +229,8 @@ With the edits made and the folders and file created, we can restart the `Zabbix
 
 The full key is `mssql.custom.query["{$MSSQL.URI}","{$MSSQL.USER}","{$MSSQL.PASSWORD}",sleeping-sessions]`
 
-Make sure to add some preprocessing with the type `JSONPath` using the `Parameter`: `$..sleeping_sessions.first()`.
+Make sure to add some preprocessing with the type *JSONPath* using the 
+**Parameter**: `$..sleeping_sessions.first()`.
 
 ![Microsoft SQL server custom query preprocessing](ch04.x-windows-server-sql-custom-query-preprocessing.png){ align=center }
 
@@ -170,18 +242,61 @@ Don't forget to add a tag to the item.
 
 *4.x Microsoft SQL server custom query tag*
 
-This item should now return a nice numeric value which you can see at `Monitoring` | `Latest data`.
+This item should now return a nice numeric value which you can see at 
+**Monitoring** → **Latest data**.
 
+---
 
 ## Setting up Redis and MongoDB monitoring
 
+TODO
+
+---
+
 ## Conclusion
-Monitoring databases through the Zabbix agent 2 provides a secure and efficient alternative to traditional ODBC based monitoring. Because the agent runs locally on the database server, it can connect directly to the database using localhost or 127.0.0.1. This eliminates the need to expose database ports to the network for the Zabbix server or proxy, significantly reducing the attack surface.
 
-With the built-in database plugins and official templates, most common monitoring metrics are available immediately after configuration. This allows us to quickly gain insight into the health and performance of their database systems without relying on external scripts or additional monitoring frameworks.
+Monitoring databases through the Zabbix agent 2 provides a secure and efficient
+alternative to traditional ODBC based monitoring. Because the agent runs locally 
+on the database server, it can connect directly to the database using localhost 
+or 127.0.0.1. This eliminates the need to expose database ports to the network 
+for the Zabbix server or proxy, significantly reducing the attack surface.
 
-For environments with specific monitoring requirements, the agent also supports custom SQL queries. By enabling the custom query functionality and placing .sql files in the configured directory, we can easily extend the default monitoring capabilities. These custom checks can then be integrated into Zabbix items and processed using preprocessing steps to extract the desired values.
+With the built-in database plugins and official templates, most common 
+monitoring metrics are available immediately after configuration. This allows 
+us to quickly gain insight into the health and performance of their database 
+systems without relying on external scripts or additional monitoring frameworks.
+
+For environments with specific monitoring requirements, the agent also supports 
+custom SQL queries. By enabling the custom query functionality and placing .sql 
+files in the configured directory, we can easily extend the default monitoring 
+capabilities. These custom checks can then be integrated into Zabbix items and 
+processed using preprocessing steps to extract the desired values.
+
+---
 
 ## Questions
 
+- Why is monitoring databases with Zabbix Agent 2 often more secure and practical 
+  than using ODBC?
+- Which databases are supported by the built-in agent plugins, and which ones 
+  need additional plugin packages installed?
+- How would I add a custom SQL query to the agent-based monitoring setup, and 
+  what configuration steps are needed to make it work?
+- Is it a good idea to use the database admin account for monitoring, or should 
+  a dedicated user be created? Why?
+
+---
+
 ## Useful URLs
+
+- [Zabbix Agent 2 Database Monitoring Documentation](https://www.zabbix.com/documentation/current/en/manual/appendix/plugins/agent2/database)
+- [https://blog.zabbix.com/database-monitoring-using-zabbix-agent-2-part-1-sql/30381/](https://blog.zabbix.com/database-monitoring-using-zabbix-agent-2-part-1-sql/30381/)
+- [https://www.zabbix.com/integrations/mysql#mysql_agent2](https://www.zabbix.com/integrations/mysql#mysql_agent2)
+- [https://www.zabbix.com/integrations/mssql](https://www.zabbix.com/integrations/mssql)
+- [https://www.zabbix.com/integrations/postgresql#postgresql_agent2](https://www.zabbix.com/integrations/postgresql#postgresql_agent2)
+- [https://git.zabbix.com/projects/ZBX/repos/zabbix/browse/src/go/plugins/mysql/README.md](https://git.zabbix.com/projects/ZBX/repos/zabbix/browse/src/go/plugins/mysql/README.md)
+- [https://git.zabbix.com/projects/AP/repos/mssql/browse/README.md](https://git.zabbix.com/projects/AP/repos/mssql/browse/README.md)
+- [https://git.zabbix.com/projects/ZBX/repos/zabbix/browse/src/go/plugins/oracle/README.md](https://git.zabbix.com/projects/ZBX/repos/zabbix/browse/src/go/plugins/oracle/README.md)
+- [https://git.zabbix.com/projects/AP/repos/postgresql/browse/README.md](https://git.zabbix.com/projects/AP/repos/postgresql/browse/README.md)
+- [https://git.zabbix.com/projects/AP/repos/mongodb/browse/README.md](https://git.zabbix.com/projects/AP/repos/mongodb/browse/README.md)
+- [https://git.zabbix.com/projects/ZBX/repos/zabbix/browse/src/go/plugins/redis/README.md](https://git.zabbix.com/projects/ZBX/repos/zabbix/browse/src/go/plugins/redis/README.md)

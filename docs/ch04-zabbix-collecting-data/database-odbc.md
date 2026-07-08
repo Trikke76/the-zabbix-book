@@ -65,7 +65,7 @@ gaps, and timeout handling differences are the most common sources of mysterious
 ODBC failures in production. The driver, not unixODBC, is what ultimately speaks
 to your database.
 
-!!! note
+!!! warning "ODBC Checks Are Blocking"
 
     ODBC checks are blocking operations. An ODBC poller process remains fully occupied
     for the duration of the query, it cannot service other items. A slow query does
@@ -217,36 +217,37 @@ the checks, not on the monitored database host. The package set is the same rega
 of which database you intend to monitor: the unixODBC driver manager first, then
 the database-specific driver on top.
 
-**Rocky Linux 9 / RHEL / Alma**
+!!! note "ODBC Driver Installation"
 
-```bash
-sudo dnf install unixODBC unixODBC-devel
-sudo dnf install mariadb-connector-odbc    # for MySQL or MariaDB targets
-sudo dnf install postgresql-odbc           # for PostgreSQL targets
-```
+    Red Hat
+    ```bash
+    sudo dnf install unixODBC unixODBC-devel
+    sudo dnf install mariadb-connector-odbc    # for MySQL or MariaDB targets
+    sudo dnf install postgresql-odbc           # for PostgreSQL targets
+    ```
 
-**Ubuntu 24.04 / Debian**
+    SUSE
+    ```bash
+    sudo zypper install unixODBC-devel
+    sudo zypper install mariadb-connector-odbc # for MySQL or MariaDB targets
+    sudo zypper install psqlODBC               # for PostgreSQL targets
+    ```
 
-```bash
-sudo apt update
-sudo apt install unixodbc unixodbc-dev
-sudo apt install odbc-mariadb              # for MySQL or MariaDB targets
-sudo apt install odbc-postgresql           # for PostgreSQL targets
-```
-
-**SUSE**
-
-```bash
-sudo zypper install unixODBC-devel
-sudo zypper install mariadb-connector-odbc # for MySQL or MariaDB targets
-sudo zypper install psqlODBC               # for PostgreSQL targets
-```
+    Debian
+    ```bash
+    sudo apt update
+    sudo apt install unixodbc unixodbc-dev
+    sudo apt install odbc-mariadb              # for MySQL or MariaDB targets
+    sudo apt install odbc-postgresql           # for PostgreSQL targets
+    ```
 
 After installation, confirm that the driver manager can see the installed drivers:
 
-```bash
-odbcinst -q -d
-```
+!!!+ note "Verify Installed Drivers"
+
+    ```bash
+    odbcinst -q -d
+    ```
 
 If a driver you just installed does not appear in the output, the package did not
 register it correctly in `/etc/odbcinst.ini` and you will need to add the entry
@@ -262,54 +263,64 @@ must both be correct for any check to function.
 Registers installed drivers under symbolic names. The `Driver` path must point
 to an installed `.so` file on the local filesystem.
 
-```ini
-[MariaDB]
-Description = MariaDB ODBC Driver
-Driver      = /usr/lib64/libmaodbc.so
+???+ example "Example `/etc/odbcinst.ini` with MySQL and PostgreSQL drivers"
 
-[PostgreSQL]
-Description = PostgreSQL ODBC Driver
-Driver      = /usr/lib64/psqlodbc.so
-```
+    ```ini
+    [MariaDB]
+    Description = MariaDB ODBC Driver
+    Driver      = /usr/lib64/libmaodbc.so
+
+    [PostgreSQL]
+    Description = PostgreSQL ODBC Driver
+    Driver      = /usr/lib64/psqlodbc.so
+    ```
 
 Verify the registry reflects installed drivers:
 
-```bash
-odbcinst -q -d
-```
+!!! info "Verify Installed Drivers"
+
+    ```bash
+    odbcinst -q -d
+    ```
 
 **`/etc/odbc.ini` — Connection Aliases (DSNs)**
 
 Defines named connections that Zabbix items reference by their section header.
 Each entry maps a symbolic name to driver, host, port, and database configuration.
 
-```ini
-[InventoryDB]
-Description = Production Inventory Database
-Driver      = MariaDB
-Server      = 192.168.1.50
-Port        = 3306
-Database    = shop_db
-User        = zabbix_mon
-Password    = strong_password
-```
+???+ example "Example `/etc/odbc.ini` with a DSN for a production inventory database"
+
+    ```ini
+    [InventoryDB]
+    Description = Production Inventory Database
+    Driver      = MariaDB
+    Server      = 192.168.1.50
+    Port        = 3306
+    Database    = shop_db
+    User        = zabbix_mon
+    Password    = strong_password
+    ```
 
 The DSN file contains database credentials. Restrict its permissions immediately
 after creation, a world-readable `odbc.ini` on a multi-user host is a straightforward
 credential exposure:
 
-```bash
-chmod 600 /etc/odbc.ini
-```
+!!! note "Restrict Permissions on `odbc.ini`"
+
+    ```bash
+    chmod 600 /etc/odbc.ini
+    ```
 
 ### Validating the Stack Before Touching Zabbix
 
 Every ODBC troubleshooting session that begins inside Zabbix should have started
 here instead. Test the DSN directly with `isql` before configuring any items:
 
-```bash
-isql -v InventoryDB
-```
+???+ example "Test ODBC Connection to 'InventoryDB' with `isql`"
+
+    ```bash
+    isql -v InventoryDB
+    ```
 
 A successful connection returns a `Connected!` prompt. If it fails, the problem
 is in the ODBC stack — driver registration, credentials, network access, TLS
@@ -331,9 +342,11 @@ about how monitoring data should be collected.
 `db.odbc.select` executes a SQL query and returns exactly one value: the first
 column of the first row of the result set. Nothing else is preserved.
 
-```text
-db.odbc.select[<description>,<dsn>,<connection string>]
-```
+???+ example
+
+    ```text
+    db.odbc.select[<description>,<dsn>,<connection string>]
+    ```
 
 This simplicity is its strength. There is no JSON preprocessing, no dependent
 item chain, no extraction logic to maintain. Write a query that produces a single
@@ -354,32 +367,38 @@ reliant on this truncation behaviour.
 
 `db.odbc.get` executes a SQL query and returns the entire result set as a JSON array.
 
-```text
-db.odbc.get[<description>,<dsn>,<connection string>]
-```
+???+ example
 
-A query returning multiple rows and columns produces something like:
+    ```text
+    db.odbc.get[<description>,<dsn>,<connection string>]
+    ```
 
-```json
-[
-  {"status": "pending",   "total": "15", "oldest_age_minutes": "47"},
-  {"status": "processing","total": "8",  "oldest_age_minutes": "12"},
-  {"status": "failed",    "total": "3",  "oldest_age_minutes": "183"}
-]
-```
+???+ example "Example JSON output from `db.odbc.get`"
+
+    A query returning multiple rows and columns produces something like:
+
+    ```json
+    [
+    {"status": "pending",   "total": "15", "oldest_age_minutes": "47"},
+    {"status": "processing","total": "8",  "oldest_age_minutes": "12"},
+    {"status": "failed",    "total": "3",  "oldest_age_minutes": "183"}
+    ]
+    ```
 
 This single query execution, hitting the database once, can feed an unlimited
-number of dependent items through JSONPath preprocessing. As the replication of
+number of *dependent items* through JSONPath preprocessing. As the replication of
 database queries as item counts grows, the database load does not.
 
 The canonical design pattern is the **master item**: one `db.odbc.get` item collects
-the full result set on a defined interval; dependent items each extract one metric
+the full result set on a defined interval; *dependent items* each extract one metric
 using JSONPath and may apply additional preprocessing steps like type conversion.
 Ten metrics, one query. A hundred metrics, one query. This is not a marginal
 optimisation, in environments monitoring dozens of databases, it is the difference
 between sustainable load and an ODBC poller pool in permanent saturation.
+Refer to the [Dependent items chapter](./dependent.md) for more details on
+dependent item configuration and JSONPath extraction.
 
-!!! note
+!!! warning "Type Consistency with `db.odbc.get`"
 
     Database drivers commonly return numeric columns as strings in ODBC result
     sets. Always include a **Change Type** preprocessing step converting to Numeric
@@ -387,24 +406,26 @@ between sustainable load and an ODBC poller pool in permanent saturation.
     graphs. Type inconsistency is the most common cause of trigger misfires on
     freshly built database monitor templates.
 
-#### A Worked Example
+#### A Working Example
 
 Consider a production order management database. Rather than running separate
 queries for pending count, processing count, average queue age, and oldest item
 age, a single query captures the relevant state in one round-trip:
 
-```sql
-SELECT
-    status,
-    COUNT(*) AS total,
-    AVG(TIMESTAMPDIFF(MINUTE, created_at, NOW())) AS avg_age_minutes,
-    MAX(TIMESTAMPDIFF(MINUTE, created_at, NOW())) AS oldest_age_minutes
-FROM orders
-WHERE status IN ('pending', 'processing', 'failed')
-GROUP BY status;
-```
+???+ example
 
-The master item runs this query every 60 seconds. From it, dependent items extract
+    ```sql
+    SELECT
+        status,
+        COUNT(*) AS total,
+        AVG(TIMESTAMPDIFF(MINUTE, created_at, NOW())) AS avg_age_minutes,
+        MAX(TIMESTAMPDIFF(MINUTE, created_at, NOW())) AS oldest_age_minutes
+    FROM orders
+    WHERE status IN ('pending', 'processing', 'failed')
+    GROUP BY status;
+    ```
+
+The *master item* runs this query every 60 seconds. From it, *dependent items* extract
 pending count, processing count, failed count, and average and maximum queue age
 per status — all without touching the database again. A trigger fires when the
 oldest failed item exceeds a threshold. Another fires when the pending count exceeds
@@ -425,7 +446,7 @@ the single master query.
 
 In practice: use `db.odbc.select` when the metric genuinely stands alone, the
 query is trivially simple, and the item will never need to feed discovery or dependent
-logic. In every other case, design around `db.odbc.get` with a master item pattern
+logic. In every other case, design around `db.odbc.get` with a *master item* pattern
 from the start. Retrofitting a scalar template into a scalable one after the fact
 is substantially more work than getting the architecture right at the outset.
 
@@ -438,6 +459,9 @@ Low-Level Discovery — automatically generating monitoring items for database o
 whose existence cannot be known at template design time. Tables, schemas, replication
 slots, partitions, named queues: anything the database can enumerate, Zabbix can
 discover and monitor.
+We will cover Low Level Discovery (LLD) in detail in the [LLD chapter](../ch08-zabbix-lld/chapter.md).
+You may want to read that chapter first before in order to fully understand the
+patterns below.
 
 ### Native Discovery: `db.odbc.discovery`
 
@@ -445,14 +469,16 @@ The `db.odbc.discovery` key is purpose-built for LLD. It executes a SQL query an
 formats the results as a discovery array. The query must alias column names to
 match LLD macro format exactly:
 
-```sql
-SELECT
-    table_name AS "{#TABLE}",
-    table_rows AS "{#APPROX_ROWS}"
-FROM information_schema.tables
-WHERE table_schema = 'shop_db'
-  AND table_type   = 'BASE TABLE';
-```
+???+ example
+
+    ```sql
+    SELECT
+        table_name AS "{#TABLE}",
+        table_rows AS "{#APPROX_ROWS}"
+    FROM information_schema.tables
+    WHERE table_schema = 'shop_db'
+    AND table_type   = 'BASE TABLE';
+    ```
 
 This produces one discovered entity per table, with macros available for use in
 item prototype keys and names. The common mistake is omitting the quoted LLD macro
@@ -462,10 +488,10 @@ or Zabbix will not recognise the column as a macro.
 ### Scalable Discovery via `db.odbc.get`
 
 For larger environments, the master item pattern extends naturally to discovery.
-A single `db.odbc.get` item collects the full dataset; a dependent discovery rule
+A single `db.odbc.get` item collects the full dataset; a *dependent discovery rule*
 extracts the LLD array using JSONPath; item prototypes are defined as further
-dependent items on the master. One query execution per interval drives the entire
-discovery and metric collection pipeline.
+*dependent items* on the *master item*. One query execution per interval drives the entire
+discovery and metric collection pipeline at once.
 
 The performance contrast becomes significant at scale. Native `db.odbc.discovery`
 executes its own query for each discovery rule. If you have five discovery rules
@@ -481,7 +507,7 @@ environment is large, the discovery interval is more frequent, or you need to
 correlate data from the same query across multiple discovery rules, use the master
 item pattern.
 
-!!! note
+!!! warning "Discovery Query Design"
 
     Discovery should detect structure, what objects exist, not operational state.
     Keep discovery queries lightweight and prefer metadata sources like `information_schema`
@@ -529,9 +555,11 @@ to become incorrect the moment the application logic changes.
 The `StartODBCPollers` parameter in `zabbix_server.conf` or `zabbix_proxy.conf`
 controls the number of concurrent ODBC poller processes.
 
-```
-StartODBCPollers=5
-```
+???+ example
+
+    ```
+    StartODBCPollers=5
+    ```
 
 Too few pollers and items queue, then go unsupported. Too many and you risk
 overwhelming the database with concurrent connections, particularly if the monitored
@@ -578,10 +606,12 @@ few exceptions" — strictly SELECT only, on the specific databases and schemas 
 needs to monitor, with no ability to modify data or schema. Create a dedicated
 account per monitored application:
 
-```sql
-CREATE USER 'zabbix_mon'@'%' IDENTIFIED BY 'strong_password';
-GRANT SELECT ON shop_db.* TO 'zabbix_mon'@'%';
-```
+???+ example "Example MySQL user creation for a monitoring account"
+
+    ```sql
+    CREATE USER 'zabbix_mon'@'%' IDENTIFIED BY 'strong_password';
+    GRANT SELECT ON shop_db.* TO 'zabbix_mon'@'%';
+    ```
 
 Store credentials in Zabbix macros rather than hardcoded in DSN files where possible.
 For environments with a secrets management platform, Zabbix's vault integration
@@ -599,11 +629,13 @@ the overhead of repeated connection establishment — the TCP handshake, TLS neg
 and authentication round-trip that precedes every query in a non-pooled configuration.
 In high-frequency monitoring environments, this overhead accumulates.
 
-```ini
-# In /etc/odbcinst.ini
-[ODBC]
-Pooling = Yes
-```
+!!! note "Enable Connection Pooling in `/etc/odbcinst.ini`"
+
+    in `/etc/odbcinst.ini`, add the following in the `[ODBC]` section:
+    ```ini
+    [ODBC]
+    Pooling = Yes
+    ```
 
 Pooling is particularly valuable in environments where database connection setup
 is expensive, SSL mutual authentication, Kerberos, or databases with slow

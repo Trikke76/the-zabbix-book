@@ -6,6 +6,7 @@ tags: [beginner]
 ---
 
 # SSH / Telnet
+
 Let's say you have a device that doesn't support SNMP, there is no API and it's 
 just not exposing any data (or just the data you need) via any protocol. However,
 you are able to login to the device and you are able to execute commands through
@@ -32,7 +33,7 @@ create valuable monitoring metrics from it.
 Let's start with the most used method, SSH. Since this is a secure encrypted 
 connection, it is often used to get data from devices that do not expose 
 it via other protocols. However, our favourite use case for SSH monitoring is to 
-get data from devices that do have SNMP or an API, but only expose certain data 
+get data from devices that do not have SNMP or an API, but only expose certain data 
 through the CLI. This gives you another option in gathering information you need 
 that the vendor might not have properly exposed.
 
@@ -55,8 +56,8 @@ customize how it works.
 
 - `<unique short description>`: Is used to make this item unique, as we cannot 
   have duplicate keys on Zabbix hosts.
-- `<ip>`: Can we used to specify the target IP Address for SSH to connect to. 
-  Can be used if no host interface is specified
+- `<ip>`: Can be used to specify the target IP Address for SSH to connect to. 
+  If this parameter is skipped, the default host interface is used.
 - `<port>`: Can be used to specify a different SSH port, the default is port 22.
 - `<encoding>`: How to decode the remote output, is it UTF-8 or ANSI for example.
 - `<ssh options>`: In case you have more SSH settings you want to use, these can
@@ -80,7 +81,7 @@ you are also able to select **Public key** as an option here. Going with
 - **Private key file**: The path to the Private key we will use to login.
 - **Key passphrase**: The password to decrypt the Private key.
 
-Keep in mind, when using SSH key authentication it is important to update you
+Keep in mind, when using SSH key authentication it is important to update your
 Zabbix server and/or Zabbix proxy configuration file. You can set the 
 `SSHKeyLocation=` parameter to for example `SSHKeyLocation=/var/lib/zabbix/.ssh/`
 which will be the path where the public and private keys for SSH checks 
@@ -103,7 +104,7 @@ secure **Password**.
     password, especially in production. This is also the reason we use username 
     `ssh-monitoring` as we will create a separate limited user account for SSH 
     monitoring. DO NOT use `root` or the device `admin` account unless the device
-    does not has the ability to create a separate restricted user account!
+    does not have the ability to create a separate restricted user account!
 
 Last but not least, let's add the command to execute in the **Executed script** field.
 
@@ -177,7 +178,7 @@ The fields are almost the same as SSH, with a few less options.
 - `<unique short description>`: Is used to make this item unique, as we cannot 
   have duplicate keys on Zabbix hosts.
 - `<ip>`: Can we used to specify the target IP Address for Telnet to connect to.
-  Can be used if no host interface is specified
+  If this parameter is skipped, the default host interface is used.
 - `<port>`: Can be used to specify a different Telnet port, the default is port
   `23`.
 - `<encoding>`: How to decode the remote output, is it UTF-8 or ANSI for example.
@@ -220,7 +221,10 @@ Do not forget to add your tag.
 Then, if you had a Telnet user set up. You can go to **Monitoring** →
 **Latest data** to check if the value is coming in.
 
+---
+
 ## Conclusion
+
 SSH and Telnet monitoring provide you with a great fallback when traditional
 protocols like SNMP or API's simply aren't available. It might also be the case 
 that a vendor hides important information within CLI commands. Using a limited 
@@ -234,10 +238,14 @@ be used when absolutely all other options are exhausted. In any case, the
 workflow remains the same in both cases: log in, run a command, preprocess the 
 output, and then use it just like any other metric you have collected.
 
+---
+
 ## Questions
 
 - What is the main difference between SSH and Telnet monitoring?
 - What is the main security risk of using Telnet monitoring?
+
+---
 
 ## Useful URLs
 
