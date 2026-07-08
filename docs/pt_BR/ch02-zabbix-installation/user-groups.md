@@ -324,9 +324,10 @@ Critical exclusion_
 
 We will create the user first, then assign them to the groups.
 
-* Navigate to User Creation: Go to Users → Users in the Zabbix frontend.
-* Click Create user.
-* Details:
+* Navegue até a criação do usuário: Vá para Usuários → Usuários no front-end do
+  Zabbix.
+* Clique em Criar usuário.
+* Detalhes:
     * Username: test_junior
     * Name & Surname: (Optional)
     * Password: Set a strong password and confirm it.
@@ -344,7 +345,7 @@ Criaremos 2 hosts, um servidor Linux e um servidor de banco de dados.
 
 * Navegue até `Coleta de dados` → `Hosts`.
 * Clique em criar host.
-* Details:
+* Detalhes:
     * Nome do host: servidor Linux
     * Modelos: Linux pelo agente Zabbix
     * Grupos de hosts: HG_All_Linux_Servers
