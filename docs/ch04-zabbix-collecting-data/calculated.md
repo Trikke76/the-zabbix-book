@@ -29,18 +29,20 @@ workflows. This led to confusion, especially when building larger monitoring
 models or template driven designs.
 
 Starting with Zabbix 7.0, these functions were unified into a single item type:
-Calculated with a single expression syntax. All former aggregation logic per host,
+**Calculated**, with a single expression syntax. All former aggregation logic per host,
 per group, or cross group is now accessed directly through functions such as:
 
-```bash
-avg()
-sum()
-percentile()
-grpavg()
-grpsum()
-groupcount()
-etc.
-```
+!!!info
+
+    ```bash
+    avg()
+    sum()
+    percentile()
+    avg_foreach()
+    sum_foreach()
+    count_foreach()
+    ```
+    etc...
 
 This unification dramatically simplifies the platform:
 
@@ -49,17 +51,17 @@ This unification dramatically simplifies the platform:
 - One template model for all calculations
 - More powerful LLD integration
 
-Zabbix 8.0 continues this streamlined approach, making calculated items a
+Zabbix 8.0 continues this streamlined approach, making **calculated items** a
 cornerstone for building analytics, SLA metrics, and higher-level abstractions.
 
 ---
 
 ## What Are Calculated Items?
 
-A calculated item is a an item whose value is produced entirely by the Zabbix
+A **calculated item** is a an item whose value is produced entirely by the Zabbix
 server. Instead of collecting external data, it uses:
 
-- Other item values (last(), avg(), max(), etc.)
+- Other item values (`last()`, `avg()`, `max()`, etc.)
 - Arithmetic operations
 - Built-in functions
 - Data aggregation across hosts or host groups
@@ -82,7 +84,7 @@ like any other metric.
 
 ## Where Calculated Items Fit in the Zabbix Data Model
 
-Calculated items are part of the broader set of Zabbix item types. They behave like:
+**Calculated items** are part of the broader set of Zabbix item types. They behave like:
 
 - Dependent items (no host communication)
 - Preprocessed items (transformation of raw data)
@@ -101,14 +103,14 @@ interval does. This means calculated items must be configured carefully to ensur
 
 ## How to create a Calculated Item
 
-To create a calculated item:
+To create a **calculated item**:
 
-1. Open Data collection → Hosts → <your host> → Items
-2. Click Create item
-3. Set Type: Calculated
+1. Open **Data collection** → **Hosts** → <your host> → **Items**
+2. Click **Create item**
+3. Set Type: **Calculated**
 4. Define:
     - Name
-    - Type: Calculated
+    - Type: **Calculated**
     - Key (unique identifier)
     - Value type (Numeric, float, etc.)
     - Formula
@@ -121,41 +123,48 @@ To create a calculated item:
 
 _calculated-item_
 
-**Example Formula :**
+???+ example "Example Formula"
 
-```bash
-last(/host/net.if.in[eth0]) + last(/host/net.if.out[eth0])
-```
+    ```bash
+    last(/host/net.if.in[eth0]) + last(/host/net.if.out[eth0])
+    ```
 
-Using this in our formula would calculate the total traffic by combining traffic
-in with traffic out. This will only work if we have 2 exact items like this on
-our host.
+    Using this in our formula would calculate the total traffic by combining traffic
+    in with traffic out. This will only work if we have 2 exact items like this on
+    our host.
 
-Another more useful example as the item net.if.total exists for the example
+Another more useful example as the item `net.if.total` exists for the example
 above could be the calculation of the interface utilization.
 
-```bash
-( last(/host/net.if.total[eth0]) * 100 ) / last(/host/net.if.speed[eth0])
-```
+???+ example "Interface Utilization Formula"
 
-Again on our host we would need the item `net.if.total[eth0]` and
-`net.if.speed[eth0]` for this to work.
+    ```bash
+    ( last(/host/net.if.total[eth0]) * 100 ) / last(/host/net.if.speed[eth0])
+    ```
+
+    Again on our host we would need the item `net.if.total[eth0]` and
+    `net.if.speed[eth0]` for this to work.
 
 !!! note
-    Zabbix does not have an Built-in item net.if.speed but we can usually read
+    Zabbix does not have an Built-in item `net.if.speed` but we can usually read
     the speed from network devices like switches. In Linux you could use as
-    alternative method `vfs.file.contents["/sys/class/net/{#IFNAME}/speed"]
+    alternative method `vfs.file.contents["/sys/class/net/{#IFNAME}/speed"]`
     where you replace `{#IFNAME}` with the correct interface name.
+
+---
 
 ## Some good practices for Calculated items
 
-1. **Align Update Intervals:** If your source item updates every 60 seconds, avoid recalculating every 5 seconds.
-2. **Always Validate Item Existence:** If one referenced item is missing, the calculated item returns unsupported.
+1. **Align Update Intervals:** If your source item updates every 60 seconds, 
+   avoid recalculating every 5 seconds.
+2. **Always Validate Item Existence:** If one referenced item is missing, 
+   the calculated item returns unsupported.
 3. **Use Templates, Not Hosts:** Especially important when building:
     - CPU utilization ratios
     - Disk usage summaries
     - Network traffic rollups
-   By using templates, calculated items become reusable and consistent across infrastructure.
+   By using templates, calculated items become reusable and consistent across 
+   infrastructure.
 4. **Use Value Type Carefully:**
     - Floating point is usually safer unless you specifically need integers.
 5. **Combine with LLD (Low-Level Discovery)**
@@ -165,13 +174,15 @@ Again on our host we would need the item `net.if.total[eth0]` and
     - Storage pool ratios
     - Multi-core CPU computations
 `
+---
+
 ## Practical Example
 
 ### Analysing Network Latency with Percentiles
 
 **The Crucial Role of Percentile Analysis in Network Quality**
-When assessing network latency, specifically using metrics like ICMP Ping response
-time, relying solely on the average (mean) can be profoundly misleading a pitfall
+When assessing network latency, specifically using metrics like *ICMP Ping response
+time*, relying solely on the average (mean) can be profoundly misleading a pitfall
 analogous to analysing website performance without considering real world user
 experience.
 
@@ -202,17 +213,17 @@ experienced by the majority of users, percentile analysis is indispensable.
 
 **Required Item: ICMP Response Time**
 
-Zabbix provides a built-in Simple Check for ICMP response time (fping-based).
+Zabbix provides a built-in Simple Check for ICMP response time (`fping`-based).
 For this exercise make sure the item is already on the system available as we
 need it for our calculated item.
 
 | Field | Value |
 | ----  |----   |
-| Name  | Icmpping               |
+| Name  | `Icmpping`               |
 | Type  | Simple check           |
-| Key   | icmppingsec[<target-IP\>] |
-| Units | s                      |
-| Update interval | typically 1–10 seconds |
+| Key   | `icmppingsec[<target-IP>]` |
+| Units | `s`                      |
+| Update interval | typically `1`–`10` seconds |
 
 The next step is to create our calculated item.
 
@@ -226,26 +237,30 @@ of collected data.
 
 | Field | Value |
 | ----  |----   |
-| Name  | Network Latency P99 (15m) |
+| Name  | `Network Latency P99 (15m)` |
 | Type  | Calculated |
-| Key   | icmppingsec.p99 (example key) |
+| Key   | `icmppingsec.p99` (example key) |
 | Value type | Numeric (float) |
-| Units | s |
-| Update interval | 30–60 seconds |
+| Units | `s` |
+| Update interval | `30`–`60` seconds |
 
 **Formula:**
 
-```bash
-percentile(/<HOST>/icmppingsec[<target-IP>],15m,99)
-```
+!!! info
+
+    ```bash
+    percentile(/<HOST>/icmppingsec[<target-IP>],15m,99)
+    ```
 
 With the monitoring item now collecting data, our immediate next step is to define
 a trigger. This trigger will allow Zabbix to notify us instantly if the defined
 threshold for network quality degradation is breached.
 
-```
-last(/<HOST\>/icmppingsec.p99)>0.150
-```
+!!! info
+
+  ```bash
+  last(/<HOST>/icmppingsec.p99) > 0.150
+  ```
 
 This will alert us if the P99 ping latency goes above 150 ms.
 
@@ -264,11 +279,11 @@ This trigger detects:
 It measures quality, not availability.
 Average latency might look fine, but P99 tells you:
 
-```bash
-“1% of the packets are delayed more than 150 ms — users notice this.”
+> 1% of the packets are delayed more than 150 ms — users notice this.
+
 or
-This trigger fires if the worst latency (top 1%) over the last 15 minutes is higher than 150 ms.
-```
+
+> This trigger fires if the worst latency (top 1%) over the last 15 minutes is higher than 150 ms.
 
 This is far more meaningful for:
 
@@ -279,85 +294,139 @@ This is far more meaningful for:
 - SD-WAN
 - VoIP/Video systems
 
-If we now go to latest data page we can take a look at our item and click on the
-graph button at the end of the screen.
+If we now go to **Latest data** page we can take a look at our item and click on the
+graph button at the right end of the screen.
 
 ![ch04.61-calculated-p99.png](ch04.61-calculated-p99.png)
 
 _p99 graph_
 
 We now have a nice overview of the quality of our network thanks to our
-calculated item. Now that we have seen how to create calculated items lets have
-a look at aggregated items.
+**calculated item**. Now that we have seen how to create **calculated items** lets have
+a look at **aggregated items**.
 
+---
 
-## Aggregated items
+## Data Aggregation
 
-Now that we've seen how Calculated Items allow us to perform mathematical operations
+Now that we've seen how **Calculated Items** allow us to perform mathematical operations
 on data from a single host (like determining the P99 latency on one server), the
 next logical step is to consider the wider picture: network-wide or service wide
 performance.
 
-This is where **Aggregated Items** come into play.
+This is where *aggregate functions* come into play.
 
-**What are Aggregated Items?**
-Simply put, an Aggregated Item gathers and processes data from multiple hosts,
-host groups, or even other items across your entire monitored environment.
+**What are aggregate functions?**
+Simply put, an aggregate function is a function that operates on a set of values,
+items from multiple hosts, or even across host groups, and returns a single value.
 
 Think of it as the tool you use to calculate the health of an entire service for
 instance, the average web server CPU load across your farm, or the total available
 disk space for all hosts in your "Database Servers" group.
 
-Aggregated Items enable the collection of crucial metrics that are inherently
+*Aggregate functions* enable the collection of crucial metrics that are inherently
 distributed. They perform functions like:
 
-- **Average (avg):** The mean value across a set of items.
-- **Sum (sum):** The total combined value (e.g., total incoming traffic).
-- **Minimum (min) / Maximum (max):** The worst or best value recorded across the group.
-- **Count (count):** The number of items that match a specific criteria (e.g., how many servers are currently unavailable).
+- **Average (`avg`):** The mean value across a set of items.
+- **Sum (`sum`):** The total combined value (e.g., total incoming traffic).
+- **Minimum (`min`) / Maximum (`max`):** The worst or best value recorded across 
+  the group.
+- **Count (`count`):** The number of items that match a specific criteria (e.g.,
+  how many servers are currently unavailable).
 
-| Item Type | Scope of Data | Purpose |
-| :----     | :----         | :----   |
-| Calculated | Single Host (or Item) | Mathematical transformation (e.g., P99, Rate of Change). |
-| Aggregated | Multiple Hosts/Groups | Statistical combination (e.g., Average, Sum, Max). |
+### Usage of aggregate functions
 
-In short, while Calculated Items help you interpret the metric for one specific
-device, Aggregated Items help you determine the collective status of a group of
-devices or an entire service.
+Aggregate functions use a slightly different syntax in a **calculated item** formula
+by adding a *foreach* function as the sole parameter to select the items to aggregate.
 
-### Configuration of Aggregated Items
+!!! info "Aggregate functions syntax"
+    The general format for an aggregate function is:
 
-Aggregated Items use a special **item key** that differs significantly from standard
-data collection methods. Instead of defining a specific check (like `icmpping`),
-you define a calculation that operates over a set of other items.
+    ```
+    <aggregate_function>(<function>_foreach(<item filter>,<timeperiod>))
+    ```
 
-The general format for an Aggregated Item key is:
+    However you can also list the required items explicitly in case you want to 
+    aggregate only a fixed set of items. In that case the syntax looks like this:
 
-```
-<aggregation_function>[<target_selector>,<item_key>,<time_shift>]
-```
+    ```
+    <aggregate_function>(<function>(/<HOST>/<key>,<parameter>),<function>(/<host2>/<key2>,<parameter>),...)
+    ```
 
-| Component | Description | Example |
-| :--- | :--- | :--- |
-| **Aggregation Function** | The statistical operation to perform (e.g., `avg`, `sum`, `max`, `min`, `count`, `foreach`). | `avg` |
-| **Target Selector** | Defines the scope of the aggregation: the hosts or groups to include. | `group:"Web Servers"` |
-| **Item Key** | Specifies the exact item to aggregate across the targets. | `system.cpu.load[all,avg1]` |
-| **Time Shift (Optional)** | A time window to shift the data collection back (for comparison). | `1h` (1 hour ago) |
+    The foreach functions however are more flexible and will automatically include
+    any new items that match the criteria in the future. So make sure to limit
+    the use of a fixed list of items to cases where you know the exact items you 
+    want to aggregate and you know they will not change in the future.
+
+`aggregate_function`
+
+:   The statistical operation to perform (e.g., `avg`, `sum`, `max`, `min`, `count`).
+    For a full list of supported aggregate functions, see the Zabbix documentation.
+
+`function_foreach`
+
+:   Defines what item values to include in the aggregation (e.g., `last_foreach`,
+    `avg_foreach`, `count_foreach`, `exists_foreach`). This function iterates over
+    a set of items defined in the `item filter` and applies the specified aggregate 
+    function to their values.
+    For example, `last_foreach` retrieves the most recent value of each item in the
+    set, while `avg_foreach` returns the average value of each item during the
+    the specified `timeperiod`.
+
+`item filter`
+
+:   Filters the items to include in the aggregation and generaly has following 
+    syntax:
+    ```
+    /<HOST>/<key>[<parameters>]?[<conditions>]
+    ```
+    Meaning that you can specify a specific `key` on a specific `HOST` or `*` to
+    select all hosts. 
+    The selected `key` may or may not have `parameters`, make sure
+    to use the exact item key. For example: `system.cpu.load[all,avg1]` or 
+    `vfs.fs.size[/,free]`. 
+    The `conditions` then allow you to further filter the
+    items based on their host `group` or item `tag` or a combination of both
+    using logical operators `and`, `or` and `not`.
+
+    An example of an item filter that selects all items with the key: 
+    `system.cpu.load[all,avg1]` from all hosts in the "Web Servers" group would
+     look like this:
+
+    ```
+    /*/system.cpu.load[all,avg1]?[group="Web Servers"]
+    ``` 
+
+`timeperiod`
+
+:   The time window to use for the `function_foreach`. For example, a `timeperiod`
+    of `5m` in the `avg_foreach` function would return the 5 minute average of
+    each item in the set defined by the `item filter`. This parameter is optional
+    for the `last_foreach` function and is not supported in `exists_foreach`.
+
+!!! warning "More parameters"
+
+    Some `function_foreach` functions support additional parameters. For example,
+    `count_foreach` requires a comparison operator and a threshold value to count.
+    Please refer to the Zabbix documentation for the specific syntax and parameters
+    required for each `function_foreach`.
 
 ---
 
-### Practical Examples of Aggregated Items
+### Practical Examples of aggregate formulas
 
-Here are several common scenarios demonstrating how to define these powerful global metrics:
+Here are several common scenarios demonstrating how to define these powerful 
+global metrics:
 
 #### Example 1: Total Free Space Across a Group
 
 **Goal:** Monitor the collective available disk space for all hosts in the
 "Database Cluster" group to prevent a system-wide outage.
 
-| Field | Configuration | Notes |
-| :--- | :--- | :--- |
-| **Key** | `sum[group:"Database Cluster",vfs.fs.size[/,,free]]` | This key **SUMS** the free space (`vfs.fs.size[/,,free]`) from every host in the group. |
+| Field | Configuration | 
+| :--- | :--- | 
+| **Formula** | `sum(last_foreach(/*/vfs.fs.size[/,,free]?[group="Database Cluster"]))` |
+| | This formula **SUMS** the free space (`vfs.fs.size[/,,free]`) from every host in the group. |
 | **Units** | `B` (Bytes) | |
 
 #### Example 2: Average CPU Load for a Service
@@ -365,32 +434,25 @@ Here are several common scenarios demonstrating how to define these powerful glo
 **Goal:** Determine the overall average CPU load experienced by your primary web
 service, which is running across the "Production Web" group.
 
-| Field | Configuration | Notes |
-| :--- | :--- | :--- |
-| **Key** | `avg[group:"Production Web",system.cpu.load[all,avg1]]` | This calculates the **AVERAGE** 1-minute CPU load across all servers in the group. |
+| Field | Configuration |
+| :--- | :--- |
+| **Formula** | `avg(last_foreach(/*/system.cpu.load[all,avg1]?[group="Production Web"]))` |
+| | This calculates the **AVERAGE** 1-minute CPU load across all servers in the group. |
 
-#### Example 3: Counting Conditional Items with `foreach`
-
-The **`foreach`** function is a highly flexible tool that allows you to calculate
-statistics based on a **condition** within the target set. Instead of aggregating
-every item, you can aggregate only those that meet certain criteria.
+#### Example 3: Counting Conditional Items
 
 **Goal:** Count how many Linux hosts in the "All Servers" group currently have a
 high CPU load (load average > 4).
 
-| Field | Configuration | Notes |
-| :--- | :--- | :--- |
-| **Key** | `count[group:"All Servers",system.cpu.load[all,avg1],last,0,gt,4]` | |
+| Field | Configuration |
+| :--- | :--- |
+| **Formula** | `count(last_foreach(/*/system.cpu.load[all,avg1]?[group="All Servers"]), gt, 4)` |
+| | This **COUNTS** the number of items with a last value > 4 across all servers in the group. |
 | **Type of Information** | Numeric (integer) | |
 | **Units** | `hosts` | |
 
-In the example above, the `count` function is performed on the results of the
-`foreach` mechanism (implied by the filters):
-
-* It checks every host in `group:"All Servers"` for the item `system.cpu.load[all,avg1]`.
-* The final filters (`gt,4`) ensure the function only counts hosts where the
-**latest** (`last`) value is **greater than** (`gt`) **4**. This gives you a clear
-count of servers currently under heavy load.
+In the example above, the `count` function takes two additional parameters: 
+the comparison operator (`gt` for "greater than") and the threshold value (`4`).
 
 ---
 
@@ -401,33 +463,43 @@ including statistics like standard deviation (`stddevpop`) and more specialized
 counting and filtering.
 
 For a complete list of all supported aggregate functions, including detailed syntax
-and examples for `foreach`, consult the official Zabbix documentation.
+and examples for the foreach functions, consult the official Zabbix documentation.
 
-#### Troubleshooting Calculated Items
+---
 
-1. How to best troubleshoot unsupported calculated items.
+## Troubleshooting Calculated Items
 
-**Always Check first:**
+Here we list a few common issues and checks you can perform in order to 
+troubleshoot them when working with calculated items.
 
-- Does the formula reference items that do not exist?
+### Unsupported Calculated Items
+
+Always Check first:
+
+- Does the formula reference items that do not exist? Check each item in the 
+  formula to ensure the requested items exist and are returning valid values.
 - Are value types compatible?
-- Does the function return something numeric?
 
-2. When you have incorrect values
+### Result has incorrect values
 
-**Check :**
+Check:
 
 - Unit mismatch (bytes vs bits)
 - Wrong interval compared to source data
 - Missing parentheses in expression
+- In case you are using aggregate functions, check the item filter and conditions
+  to ensure they are correctly selecting the intended items.
 
-3. No Graphs Displaying
+### No Graphs Displaying
 
-**Ensure :**
+Ensure:
 
 - Value type is numeric
 - Units are properly set
 - History/trends retention is not zero
+- Item interval is small enough to have data points for the data you want to graph
+
+---
 
 ## Conclusion
 
@@ -435,7 +507,8 @@ This chapter marks a critical turning point in our monitoring journey. We moved
 beyond simply collecting raw data and focused on the true value of a robust system:
 **data transformation and interpretation.** 
 
-Key Takeaways
+Key Takeaways:
+
 - **Percentile Power:** We established that relying on average metrics can
   dangerously obscure intermittent performance issues like microbursts and congestion.
   Techniques like calculating the $99^{th}$ percentile ($P99$) with a Calculated
@@ -444,32 +517,32 @@ Key Takeaways
 - **Calculated Items:** These tools allow us to apply complex mathematical logic,
   transformations, and filters to data collected from a single host, turning raw
   response times into actionable quality scores.
-- **Aggregated Items:** We extended our view beyond the individual host by configuring
-  Aggregated Items. Using functions like avg, sum, and the powerful conditional
-  logic of foreach, we learned how to unify metrics from entire host groups or
+- **Aggregate formulas:** We extended our view beyond the individual host by using
+  aggregate functions. Using functions like `avg`, `sum`, and the powerful conditional
+  logic of foreach functions, we learned how to unify metrics from entire host groups or
   services to derive crucial metrics like service-wide free space or the total
   count of unhealthy hosts.
 
-By mastering these two item types, you gain the ability to define metrics that
+By mastering **Calculated items**, you gain the ability to define metrics that
 directly correlate with your business objectives not just the underlying machine
 statistics. You can now build alerts and dashboards that clearly expose the health
 of your entire infrastructure or service stack, replacing vague metrics with
 concrete, measurable KPIs.
 
+---
+
 ## Questions
 
-- What is the primary difference in data scope between a Calculated Item and an
-  Aggregated Item?
-- If you wanted to track the rate of change (the difference between the last two
-  readings) of a host's disk space, which type of Zabbix item would you use, and why?
-- Explain the purpose of the foreach function in Zabbix aggregation. How does it
-  allow you to achieve a goal that a simple avg or sum function cannot?
+- Explain the purpose of the foreach functions in Zabbix aggregation. How does it
+  allow you to achieve a goal that a simple `avg` or `sum` function cannot?
 - You need to calculate the total incoming network traffic for all devices in
-  the "Core Routers" host group. Write the correct Aggregated Item key using the
-  sum function, assuming the item key for incoming traffic is net.if.in[eth0]
+  the "Core Routers" host group. Write the correct formula using the
+  `sum` function, assuming the item key for incoming traffic is `net.if.in[eth0]`.
+
+---
 
 ## Useful URLs
 
-- [https://www.zabbix.com/documentation/current/en/manual/appendix/functions/aggregate#aggregate-functions-1](https://www.zabbix.com/documentation/current/en/manual/appendix/functions/aggregate#aggregate-functions-1)
 - [https://www.zabbix.com/documentation/current/en/manual/config/items/itemtypes/calculated](https://www.zabbix.com/documentation/current/en/manual/config/items/itemtypes/calculated)
+- [https://www.zabbix.com/documentation/current/en/manual/config/triggers/expression/aggregate](https://www.zabbix.com/documentation/current/en/manual/config/triggers/expression/aggregate)
 
