@@ -21,17 +21,25 @@ storing history in ClickHouse.
 
 ## What Moves to ClickHouse — and What Doesn't
 
-Before diving into the installation, it's worth being precise about what ClickHouse actually takes over, since this is usually the first question readers ask.
+Before diving into the installation, it's worth being precise about what ClickHouse
+actually takes over, since this is usually the first question readers ask.
 
-ClickHouse stores **history data only** — the raw, per-item values collected by Zabbix (numeric, string, text, log, and JSON). Everything else stays in the primary database:
+ClickHouse stores **history data only**, the raw, per-item values collected by Zabbix
+(numeric, string, text, log, and JSON). Everything else stays in the primary database:
 
-* **Configuration data** — hosts, items, triggers, templates, users, actions, and so on
+* **Configuration data** — hosts, items, triggers, templates, users, actions,
+  and so on
 * **Trends** — the hourly aggregated min/avg/max data used for long-term graphing
-* **Events and problems** — the operational state Zabbix uses to evaluate and display problems
+* **Events and problems** — the operational state Zabbix uses to evaluate and display
+  problems
 * **Audit log**
 * **Other operational tables** (sessions, queues, discovered hosts, etc.)
 
-In short: the primary database (PostgreSQL or MySQL) remains the single source of truth for *what Zabbix is* and *what it currently thinks is wrong*. ClickHouse becomes the place where the raw measurement history lives, optimized for the kind of high-volume, append-only, time-series writes that relational databases handle less gracefully at scale.
+> **In short**: the primary database (PostgreSQL or MySQL) remains the single
+  source of truth for *what Zabbix is* and *what it currently thinks is
+  wrong*. ClickHouse becomes the place where the raw measurement history
+  lives, optimized for the kind of high-volume, append-only, time-series
+  writes that relational databases handle less gracefully at scale.
 
 The high-level flow looks like this:
 
@@ -53,9 +61,6 @@ The examples in this chapter were tested using:
 * Rocky Linux 9
 * ClickHouse 26.6.1.1193
 * Zabbix 8
-
-> **Note**
-> At the time of writing, ClickHouse 26.6 is newer than the latest version officially supported by Zabbix 8. It functions correctly in a lab environment, but Zabbix will report it as unsupported. To use this version, enable `AllowUnsupportedDBVersions=1`. Treat this as a temporary workaround, not a production setting — remove it once your ClickHouse version is officially supported.
 
 ## Installing ClickHouse
 
@@ -82,7 +87,9 @@ systemctl status clickhouse-server
 
 ## Configuring ClickHouse
 
-By default, ClickHouse only listens on the loopback interface. That's fine when Zabbix and ClickHouse run on the same host, but many environments use a dedicated ClickHouse server or cluster instead.
+By default, ClickHouse only listens on the loopback interface. That's fine when
+Zabbix and ClickHouse run on the same host, but many environments use a dedicated
+ClickHouse server or cluster instead.
 
 Create the following configuration file:
 
@@ -102,7 +109,9 @@ systemctl restart clickhouse-server
 
 ## Correcting Filesystem Permissions
 
-ClickHouse needs write access to its data directory. Incorrect ownership or SELinux contexts are a common source of startup failures or permission errors during database creation.
+ClickHouse needs write access to its data directory. Incorrect ownership or SELinux
+contexts are a common source of startup failures or permission errors during database
+creation.
 
 Ensure the directory has the correct ownership and permissions.
 
@@ -151,7 +160,7 @@ curl -u zabbix:zabbix \
 
 The command should return:
 
-```
+``` bash
 1
 ```
 
@@ -159,7 +168,8 @@ This confirms the HTTP interface is working and the user has sufficient permissi
 
 ## Importing the Zabbix History Schema
 
-The Zabbix source distribution contains helper scripts that automatically create the required ClickHouse tables.
+The Zabbix source distribution contains helper scripts that automatically create
+the required ClickHouse tables.
 
 Navigate to the ClickHouse database scripts:
 
@@ -179,7 +189,7 @@ Execute each schema script:
 
 Repeat the process for the remaining history types:
 
-```
+``` bash
 history_uint_schema.sh
 history_str_schema.sh
 history_text_schema.sh
@@ -187,15 +197,19 @@ history_log_schema.sh
 history_json_schema.sh
 ```
 
-Once complete, ClickHouse will contain a separate table for every supported Zabbix history value type.
+Once complete, ClickHouse will contain a separate table for every supported Zabbix
+history value type.
 
 ## Configuring Retention and Partitioning
 
-The schema generation scripts let you customize both data retention and partitioning at creation time.
+The schema generation scripts let you customize both data retention and partitioning
+at creation time.
 
 ### Configuring Retention (TTL)
 
-Each history table includes a Time-To-Live (TTL) expression that automatically removes old history data. By default, the scripts retain history for 31 days (2,678,400 seconds).
+Each history table includes a Time-To-Live (TTL) expression that automatically
+removes old history data. By default, the scripts retain history for 31
+days (2,678,400 seconds).
 
 To retain history for 90 days instead, specify:
 
@@ -209,7 +223,8 @@ The generated table will include:
 TTL clock_ns + toIntervalSecond(7776000)
 ```
 
-Unlike traditional databases, ClickHouse removes expired data automatically during background merge operations — there's no housekeeping job to schedule or monitor.
+Unlike traditional databases, ClickHouse removes expired data automatically during
+background merge operations, there's no housekeeping job to schedule or monitor.
 
 ### Choosing a Partitioning Strategy
 
@@ -219,7 +234,9 @@ The default partitioning strategy creates one partition per day:
 --partition toDate
 ```
 
-Daily partitions work well for smaller installations, but can result in a very large number of partitions over time. Larger environments generally benefit from monthly partitions instead:
+Daily partitions work well for smaller installations, but can result in a very
+large number of partitions over time. Larger environments generally benefit
+from monthly partitions instead:
 
 ```bash
 --partition toYYYYMM
@@ -242,7 +259,8 @@ Monthly partitions typically strike the best balance between:
 * retention management
 * query performance
 
-For most production deployments, monthly partitions combined with an appropriate TTL are recommended.
+For most production deployments, monthly partitions combined with an appropriate
+TTL are recommended.
 
 **Example:**
 
@@ -268,7 +286,8 @@ Configure ClickHouse as the history provider:
 HistoryProvider=clickhouse;value_types="uint,dbl,str,log,text,json",url=http://127.0.0.1:8123,db=zabbix,username=zabbix,password="zabbix"
 ```
 
-When using ClickHouse 26.6 or another version newer than officially supported, also set:
+When using ClickHouse 26.6 or another version newer than officially supported,
+also set:
 
 ```
 AllowUnsupportedDBVersions=1
@@ -298,12 +317,13 @@ tail -f /var/log/zabbix/zabbix_server.log
 
 A successful connection produces output similar to:
 
-```
+```bash
 retrieving history provider "clickhouse" information
 history provider "clickhouse" version "26.6.1.1193"
 ```
 
-At this point, newly collected history values are being written directly to ClickHouse.
+At this point, newly collected history values are being written directly
+to ClickHouse.
 
 ## Verifying ClickHouse
 
@@ -323,7 +343,7 @@ curl http://127.0.0.1:8123/ping
 
 Expected output:
 
-```
+```bash
 Ok.
 ```
 
@@ -335,7 +355,7 @@ SHOW TABLES;
 
 Expected output:
 
-```
+```bash
 history
 history_uint
 history_str
@@ -344,15 +364,28 @@ history_log
 history_json
 ```
 
-If all six tables are present and Zabbix reports a successful connection, the history backend is correctly configured.
+If all six tables are present and Zabbix reports a successful connection, the
+history backend is correctly configured.
 
 ## Backups
 
-It's worth treating ClickHouse's backup strategy as a separate decision from your primary database's backup strategy, rather than assuming they should mirror each other.
+It's worth treating ClickHouse's backup strategy as a separate decision from your
+primary database's backup strategy, rather than assuming they should mirror each
+other.
 
-For many organizations, raw history data is effectively disposable: it's valuable for troubleshooting and short-term analysis, but it isn't the system of record for configuration or for the current state of problems — that all lives in the primary database, which still needs rigorous, tested backups. Depending on your retention requirements and risk tolerance, ClickHouse history may warrant a lighter-weight approach, such as periodic snapshots or simply relying on TTL-based expiry and re-collection, rather than the same RPO/RTO targets you'd apply to PostgreSQL or MySQL.
+For many organizations, raw history data is effectively disposable: it's valuable
+for troubleshooting and short-term analysis, but it isn't the system of record
+for configuration or for the current state of problems, that all lives in the
+primary database, which still needs rigorous, tested backups. Depending on your
+retention requirements and risk tolerance, ClickHouse history may warrant a
+lighter-weight approach, such as periodic snapshots or simply relying on TTL-based
+expiry and re-collection, rather than the same RPO/RTO targets you'd apply to
+PostgreSQL or MySQL.
 
-If you do need durable ClickHouse backups — for example, to satisfy a compliance requirement around historical data retention — tools like `clickhouse-backup` can perform consistent backups of MergeTree tables without stopping the server. Weigh this against your actual retention needs before adding the operational overhead.
+If you do need durable ClickHouse backups, for example, to satisfy a compliance
+requirement around historical data retention — tools like `clickhouse-backup` can
+perform consistent backups of MergeTree tables without stopping the server. Weigh
+this against your actual retention needs before adding the operational overhead.
 
 ## Looking Ahead: Clusters and High Availability
 
@@ -360,7 +393,7 @@ This chapter covers a single-node ClickHouse instance, which is sufficient for m
 lab and small production environments. For larger or high-availability deployments,
 ClickHouse supports clustering through **ClickHouse Keeper** (for coordination),
 **ReplicatedMergeTree** tables (for data redundancy across nodes), and **distributed
-tables** (to query across shards transparently). 
+tables** (to query across shards transparently).
 
 ## Troubleshooting
 
@@ -368,7 +401,7 @@ tables** (to query across shards transparently).
 
 If ClickHouse reports a permission error such as:
 
-```
+``` bash
 Permission denied
 ```
 
@@ -390,27 +423,14 @@ curl -u zabbix:zabbix \
 "http://127.0.0.1:8123/?database=zabbix&query=SELECT%201"
 ```
 
-When Zabbix and ClickHouse run on the same server, prefer `http://127.0.0.1:8123` over a hostname — this avoids potential DNS or hostname resolution issues.
+When Zabbix and ClickHouse run on the same server, prefer `http://127.0.0.1:8123`
+over a hostname, this avoids potential DNS or hostname resolution issues.
 
-### Unsupported ClickHouse Version
+## questions
 
-If Zabbix reports:
 
-```
-Unsupported DB!
-ClickHouse version 26.6.x is newer than supported 26.4.x
-```
 
-enable:
+## Useful URLs
 
-```
-AllowUnsupportedDBVersions=1
-```
-
-Use this only for testing or lab environments, until the ClickHouse version you're running is officially supported by your Zabbix release.
-
-## Summary
-
-In this chapter, you installed ClickHouse, created the required database and user, imported the Zabbix history schema, configured data retention and partitioning, and connected Zabbix 8 to ClickHouse as its history storage backend.
-
-Using ClickHouse allows Zabbix to efficiently store and query very large volumes of history data while significantly reducing load on the primary relational database. Proper partitioning and retention policies — combined with a backup strategy that matches the actual value of your history data — are essential for getting the best long-term performance with the least maintenance overhead.
+[https://clickhouse.com/docs/faq/operations/delete-old-data](https://clickhouse.com/docs/faq/operations/delete-old-data)
+[https://clickhouse.com/docs/](https://clickhouse.com/docs/)
