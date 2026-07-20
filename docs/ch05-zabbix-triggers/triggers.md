@@ -236,4 +236,17 @@ The best tip regarding triggers? A good trigger shows you the problem. A great t
 
 ## Questions
 
+- What is the main purpose of triggers in Zabbix? How do they help turn collected
+  item data into actionable insights?
+- Explain the difference between the Name and Event name fields when creating a
+trigger. When might you use the Event name field?
+- What is Operational data used for? Provide an example of a useful macro in
+this field.
+- You notice frequent false positives from CPU spikes. How would you adjust the
+trigger to make it more reliable?
+
 ## Useful URLs
+
+- [https://www.zabbix.com/documentation/current/en/manual/config/triggers](https://www.zabbix.com/documentation/current/en/manual/config/triggers)
+- [https://www.zabbix.com/documentation/current/en/manual/config/triggers/expression](https://www.zabbix.com/documentation/current/en/manual/config/triggers/expression)
+
