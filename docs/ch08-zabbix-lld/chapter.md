@@ -168,8 +168,6 @@ filters, and overrides against them.
 **SNMP LLD** covers discovery using SNMP OID walks, which is the primary mechanism
 for monitoring network equipment such as switches and routers.
 
-**Windows LLD** covers service discovery and WMI-based discovery on Windows hosts.
-
 
 By the end of this part you will be able to build discovery rules for any entity
 in your infrastructure, configure filters to control what gets monitored, apply

@@ -390,8 +390,45 @@ different severity levels.
 
 ![lld different severity](lld-users-override.png)
 
-# Conclusion
+## Conclusion
 
-# Question
+Custom Low-Level Discovery using scripts is one of the most powerful and flexible
+features in Zabbix. By outputting properly formatted JSON with LLD macros, you
+can dynamically discover virtually any entity—users, filesystems, services, containers,
+databases, or cloud resources—and automatically create the necessary items, triggers,
+graphs, and even alerts.
 
-# Useful URLs
+In this chapter we built a complete example: a custom discovery script for active users,
+we used UserParameters on the agent, item and trigger prototypes, and Overrides for
+context-aware alerting (e.g., escalating root logins). This hands-on approach not
+only gives you a working solution but also a strong mental model for all other
+LLD types.
+
+Key takeaways:
+
+- Always prefer templates for LLD rules.
+- Keep discovery intervals reasonable to avoid performance impact.
+- Use descriptive macro names and keep JSON output clean.
+- Leverage Overrides for intelligent, conditional behavior.
+- Test thoroughly using the built-in test buttons.
+
+Mastering custom LLD opens the door to truly scalable, automated monitoring.
+A great monitoring system doesn’t just collect data, it intelligently discovers
+what's important and reacts accordingly. Custom LLD is a major step toward that
+goal.
+
+## Question
+
+- What is Low-Level Discovery (LLD) in Zabbix, and why is the custom script approach
+  a good foundation for learning other LLD types?
+- What JSON structure must a custom discovery script return? Explain the role of
+  LLD macros (e.g., {#USERNAME}, {#FSNAME}).
+- What are LLD Overrides, and how would you use them to apply different severities
+  (e.g., High for root login vs. Informational for regular users)?
+- Why is proper JSON formatting critical in custom LLD scripts? What can go wrong
+  if it's malformed?
+
+## Useful URLs
+
+- [https://www.zabbix.com/documentation/current/en/manual/discovery/low_level_discovery](https://www.zabbix.com/documentation/current/en/manual/discovery/low_level_discovery)
+
