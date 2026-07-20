@@ -933,7 +933,8 @@ monitoring across diverse infrastructures.
 
 ## Questions
 
-- What are the main configuration elements a Zabbix template can contain, and how do they contribute to standardizing monitoring?
+- What are the main configuration elements a Zabbix template can contain, and how
+  do they contribute to standardizing monitoring?
 - Explain what happens to UUIDs when a template is cloned.
 - Why is it important to preserve UUIDs when managing templates through YAML or Git?
 - Describe how tags are inherited when a template is applied to a host.
