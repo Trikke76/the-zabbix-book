@@ -1,10 +1,28 @@
 # Network discovery and active agent auto autoregistration.
 
-In this chapter, we'll take a deep dive into automating host onboarding in Zabbix.
-We'll cover network discovery for identifying devices across your infrastructure
-and active agent autoregistration for automatically adding hosts as they come
-online. You'll learn how to use these mechanisms to eliminate manual configuration,
-dynamically detect new systems, and ensure your monitoring environment stays up
-to date as your infrastructure evolves. By the end, you'll have the skills to implement
-scalable, automated discovery workflows that simplify management and make your
-Zabbix deployment more efficient and responsive to change.
+Monitoring a static infrastructure is relatively straightforward. But in today’s
+dynamic IT environments — with cloud instances, containers, virtual machines, and
+frequently changing hardware — manually adding and maintaining hosts quickly
+becomes impractical.
+
+This chapter focuses on **Zabbix Discovery**, one of the most powerful automation
+features in Zabbix. Discovery allows you to automatically detect and start
+monitoring new hosts and resources with minimal manual effort.
+
+In this chapter we cover two important discovery methods:
+
+### Active Agent Autoregistration
+
+Learn how to configure Zabbix Agents to register themselves automatically when
+they come online. This method is particularly useful for dynamic environments
+such as cloud, automated server provisioning, and large-scale deployments.
+
+### Network Host Discovery
+
+Explore how Zabbix can actively scan your network using IP ranges to discover
+hosts, services, and available SNMP devices. This is ideal for traditional
+on-premise networks and for initial inventory of unknown infrastructure.
+
+By the end of this chapter you will understand how to combine discovery techniques
+with templates and actions to create a highly automated, scalable monitoring setup
+that grows with your infrastructure.
