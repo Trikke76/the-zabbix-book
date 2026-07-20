@@ -196,43 +196,71 @@ about. We usually pick on of 5 options.
 
 _5.6 Zabbix agent not seen for 5m trigger tag_
 
-We can now click on the `Add` button at the bottom of the form and our trigger is done! If we stop our Zabbix agent with `systemctl stop zabbix-agent2` we should get a new problem after 5 minutes.
+We can now click on the `Add` button at the bottom of the form and our trigger
+is done! If we stop our Zabbix agent with `systemctl stop zabbix-agent2` we should
+get a new problem after 5 minutes.
 
 ## Another trigger
 
-Before we stop our chapter here though, let's go through one more trigger example. We also created a new item to monitor the monitoring target CPU utilization. A perfect example for another trigger. Let's create it like the image below.
+Before we stop our chapter here though, let's go through one more trigger example.
+We also created a new item to monitor the monitoring target CPU utilization. A
+perfect example for another trigger. Let's create it like the image below.
 
 ![CPU utilization over 90% trigger](ch05.7-trigger-02-example.png){ align=center }
 
 _5.7 CPU utilization over 90% trigger_
 
-Don't forget to add the tag `scope:performance` and then add the trigger by clicking the `Add` button at the bottom of the form.
+Don't forget to add the tag `scope:performance` and then add the trigger by clicking
+the `Add` button at the bottom of the form.
 
-Breaking down this expression we can see a very similar setup as the previous trigger. But this is not a time based trigger and it will not trigger based on a simple data being received or not. Instead this trigger uses the function `min` over a time period of 3 minutes (`3m`) and with the operator and constant `=>90`.
+Breaking down this expression we can see a very similar setup as the previous trigger.
+But this is not a time based trigger and it will not trigger based on a simple data
+being received or not. Instead this trigger uses the function `min` over a time
+period of 3 minutes (`3m`) and with the operator and constant `=>90`.
 
-Simply put, this trigger will be evaluated every time new data is received on the item `proc.cpu.util`. We created that item earlier, with an update interval of 1 minute (`1m`). In a time period of 3 minutes that means we could have received the following.
+Simply put, this trigger will be evaluated every time new data is received on the
+item `proc.cpu.util`. We created that item earlier, with an update interval of
+1 minute (`1m`). In a time period of 3 minutes that means we could have received
+the following.
 
 - **95%**
 - **80%**
 - **99%**
 
-In this case, the CPU utilization is spiking shortly over 90%. The problem however will not start, because we used the `min` function. Function `min` and `max` are some of the most useful function in Zabbix, as they can be used to filter spikes and drops respectively. Since we used `min` in our expression, the result will be `80%` as that is the minimum (smallest) value in our 3 minute time period. If our data looked like below however, the result would be different.
+In this case, the CPU utilization is spiking shortly over 90%. The problem however
+will not start, because we used the `min` function. Function `min` and `max` are
+some of the most useful function in Zabbix, as they can be used to filter spikes
+and drops respectively. Since we used `min` in our expression, the result will
+be `80%` as that is the minimum (smallest) value in our 3 minute time period.
+If our data looked like below however, the result would be different.
 
 - **90%**
 - **99%**
 - **97%**
 
-In this case our minimum value is `90%`, which is indeed equal to or higher than 90 as stated in the expression with `=>90`.
+In this case our minimum value is `90%`, which is indeed equal to or higher than
+90 as stated in the expression with `=>90`.
 
 ## Conclusion
 
-Triggers in Zabbix can be used to detect problems and automatically resolved them based on the data received on items in Zabbix. We do not have to create triggers for all of our items in Zabbix (see Zabbix dataflow in the previous chapter), but they can be useful on important data.
+Triggers in Zabbix can be used to detect problems and automatically resolved them
+based on the data received on items in Zabbix. We do not have to create triggers
+for all of our items in Zabbix (see Zabbix dataflow in the previous chapter), but
+they can be useful on important data.
 
-A few more tips to keep in mind when working with triggers. Make sure to keep your severities setup correctly, as this is one of the most important parameters for filtering later. They are very important to create alerting correctly later.
+A few more tips to keep in mind when working with triggers. Make sure to keep your
+severities setup correctly, as this is one of the most important parameters for
+filtering later. They are very important to create alerting correctly later.
 
-It is also a good idea to keep your trigger names short and descriptive. `CPU utilization >90%` is a lot easier to understand than `CPU utilization on the server has been over 90% for the past three minutes`. People are usually in a rush, especially when there is a problem with IT infrastructure. The more reading you have to do in that situation, the less likely you are to see the issue straight away.
+It is also a good idea to keep your trigger names short and descriptive.
+`CPU utilization >90%` is a lot easier to understand than `CPU utilization on
+the server has been over 90% for the past three minutes`. People are usually in
+a rush, especially when there is a problem with IT infrastructure. The more reading
+you have to do in that situation, the less likely you are to see the issue
+straight away.
 
-The best tip regarding triggers? A good trigger shows you the problem. A great trigger instantly makes you think of where to go and what to do to solve it.
+The best tip regarding triggers? A good trigger shows you the problem. A great
+trigger instantly makes you think of where to go and what to do to solve it.
 
 ## Questions
 
