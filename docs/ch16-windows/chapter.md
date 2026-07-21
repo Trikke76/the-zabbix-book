@@ -19,5 +19,5 @@ data without relying on external scripts or third-party tools.
 In this chapter, you'll learn how to monitor Windows systems using Zabbix
 Agent 2, work with Performance Counters, Event Logs, Windows Services, WMI,
 and Registry monitoring, and understand when to use each approach. Along the
-way, you’ll also learn practical troubleshooting techniques and best practices
+way, you'll also learn practical troubleshooting techniques and best practices
 for building efficient and maintainable Windows monitoring solutions.
