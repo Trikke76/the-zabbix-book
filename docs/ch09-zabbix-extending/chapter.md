@@ -3,10 +3,10 @@
 You've now mastered the core concepts of Zabbix: collecting data with items,
 alerting with triggers, dynamically discovering resources with LLD, and automatically
 registering new hosts. At this point Zabbix is already a very capable monitoring
-system, but it doesn’t stop there.
+system, but it doesn't stop there.
 
-One of Zabbix’s greatest strengths is its extensibility. Instead of being limited
-to what’s available out of the box, you can tailor the platform to your exact
+One of Zabbix's greatest strengths is its extensibility. Instead of being limited
+to what's available out of the box, you can tailor the platform to your exact
 environment and requirements. In this chapter we explore two of the most practical
 and powerful ways to extend Zabbix:
 

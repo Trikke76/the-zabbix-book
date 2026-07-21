@@ -394,8 +394,8 @@ different severity levels.
 
 Custom Low-Level Discovery using scripts is one of the most powerful and flexible
 features in Zabbix. By outputting properly formatted JSON with LLD macros, you
-can dynamically discover virtually any entity—users, filesystems, services, containers,
-databases, or cloud resources—and automatically create the necessary items, triggers,
+can dynamically discover virtually any entity users, filesystems, services, containers,
+databases, or cloud resources and automatically create the necessary items, triggers,
 graphs, and even alerts.
 
 In this chapter we built a complete example: a custom discovery script for active users,
@@ -413,7 +413,7 @@ Key takeaways:
 - Test thoroughly using the built-in test buttons.
 
 Mastering custom LLD opens the door to truly scalable, automated monitoring.
-A great monitoring system doesn’t just collect data, it intelligently discovers
+A great monitoring system doesn't just collect data, it intelligently discovers
 what's important and reacts accordingly. Custom LLD is a major step toward that
 goal.
 

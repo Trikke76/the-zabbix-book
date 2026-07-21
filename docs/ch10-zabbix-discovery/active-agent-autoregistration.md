@@ -174,10 +174,9 @@ as an incoming host registering itself will create an autoregistration event. In
 Zabbix, any event coming in will always be matches against all action conditions
 and execute the operations for all matches.
 
-![Zabbix Agent autoregistration action list](autoregistration/ch10.x-autoregistration-action-list.png){ align=center }
+![Zabbix Agent autoregistration action list](ch10.x-autoregistration-action-list.png){ align=center }
 
-_10.x Zabbix Agent autoregistration action list
-
+_10.x Zabbix Agent autoregistration action list_
 
 ## Using HostMetadataItem
 
@@ -195,7 +194,6 @@ metadata.
 
 This can be useful when building automated deployment systems where you want hosts
 to classify themselves automatically.
-
 
 ## Using global PSK authentication
 
@@ -241,7 +239,6 @@ such as Ansible, PDQ Deploy or other tools.
     environments, consider automatically rotating to unique host-specific PSKs
     after registration.
 
-
 ## Security considerations
 
 Autoregistration is extremely convenient, but it should be configured carefully.
@@ -283,4 +280,4 @@ monitored immediately, consistently, securely, and with minimal administrative l
 
 ## Useful URLs
 
-- https://www.zabbix.com/documentation/current/en/manual/discovery/auto_registration
+- [https://www.zabbix.com/documentation/current/en/manual/discovery/auto_registration](https://www.zabbix.com/documentation/current/en/manual/discovery/auto_registration)

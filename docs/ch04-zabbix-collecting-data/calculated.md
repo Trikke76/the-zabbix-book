@@ -375,7 +375,7 @@ by adding a *foreach* function as the sole parameter to select the items to aggr
 
 `item filter`
 
-:   Filters the items to include in the aggregation and generaly has following 
+:   Filters the items to include in the aggregation and generally has following 
     syntax:
     ```
     /<HOST>/<key>[<parameters>]?[<conditions>]
