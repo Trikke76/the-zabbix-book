@@ -412,7 +412,7 @@ chown -R clickhouse:clickhouse /var/lib/clickhouse
 restorecon -Rv /var/lib/clickhouse
 ```
 
-Restart ClickHouse afterward.
+Restart ClickHouse afterwards.
 
 ### Zabbix Cannot Connect to ClickHouse
 

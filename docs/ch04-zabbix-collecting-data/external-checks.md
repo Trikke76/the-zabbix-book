@@ -185,7 +185,7 @@ does. Used sensibly and sparingly, external checks are one of the most powerful
 extensibility mechanisms Zabbix offers.
 
 The example we built here is very basic, but it demonstrates the principle.
-When the output of the command is complex, you can ofcourse parse it using
+When the output of the command is complex, you can of course parse it using
 preprocessing steps, or even return JSON and use the `JSONPath` preprocessor to 
 extract the values you need. The sky is the limit, as long as you keep your scripts
 simple, fast, and reliable.
