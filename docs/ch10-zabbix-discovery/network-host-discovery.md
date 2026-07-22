@@ -1,4 +1,12 @@
-# Automating adding hosts with network discovery 
+ ---
+description: |
+    Master Zabbix network discovery. Automating discovery of devices on your
+    network.Assign templates & host groups. Perfect for large, cloud & dynamic
+    infrastructures.
+ tags: [advanced]
+---
+
+# Automating adding hosts with network discovery
 
 In this chapter, we'll explore the powerful automation features in Zabbix called
 **network discovery**. This tools are essential

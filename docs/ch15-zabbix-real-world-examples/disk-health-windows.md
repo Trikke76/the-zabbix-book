@@ -1,8 +1,10 @@
 ---
 description: |
-    test
+    Learn how to monitor Windows disk health with Zabbix Agent 2 and Smartmontools,
+    including SMART status, temperature, wear level and disk alerts.
 tags: [beginner]
 ---
+
 # Disk Health Monitoring on Windows with Smartmontools
 
 This guide explains how to enable monitoring of the disk “health” (temperature,

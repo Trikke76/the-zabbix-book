@@ -1,3 +1,10 @@
+---
+description: |
+    Learn how to partition a PostgreSQL database with TimescaleDB for Zabbix to
+    improve performance, automate retention and scale large deployments.
+tags:[advanced]
+---
+
 # Partitioning PostgreSQL with TimescaleDB
 
 If you're familiar with partitioning a Zabbix database using MySQL or any of the
