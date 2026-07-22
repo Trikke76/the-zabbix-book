@@ -1,3 +1,10 @@
+---
+description: |
+    Learn how to filter Zabbix low-level discovery without JSONPath using preprocessing
+    and discovery filters to simplify templates and improve reliability.
+tags: [advanced]
+---
+
 # Filtering LLD Data Without JSONPath Filters in Item Keys
 
 When working with Low-Level Discovery (LLD) in Zabbix, a common challenge arises

@@ -1,8 +1,8 @@
 ---
 description: |
-    Secure your Zabbix frontend with HTTPS using self-signed SSL certificates on
-    Nginx or Apache. Step-by-step guide to generating certificates, configuring,
-    and protecting your monitoring data with encrypted connections.
+    Protect your Zabbix frontend with SSL/TLS, secure web server configuration,
+    certificate management, HTTPS enforcement and security best practices.
+tags: [beginner]
 ---
 # Securing the frontend
 

@@ -1,3 +1,10 @@
+---
+description: |
+    Configure SELinux securely for Zabbix using best practices for contexts,
+    policies, booleans, audit logs, custom modules and Enterprise Linux.
+tags:[advanced]
+---
+
 # SELinux and Zabbix
 
 SELinux (Security-Enhanced Linux) provides mandatory access control for Zabbix by

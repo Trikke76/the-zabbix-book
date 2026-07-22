@@ -1,3 +1,10 @@
+---
+description: |
+    Learn how to partition the Zabbix database to improve performance, simplify
+    maintenance, optimize data retention and scale large environments.
+tags: [advanced]
+---
+
 # Partitioning a Zabbix MariaDB (MySQL) database with Perl
 
 As your Zabbix environment grows, you'll eventually notice that the built-in housekeeper

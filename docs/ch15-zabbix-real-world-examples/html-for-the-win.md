@@ -2,7 +2,7 @@
 description: |
     Employ HTML to extend Zabbix dashboards with some custom ways of displaying
     things and no need to develop custom widgets.
-tags: [beginner]
+tags: [advanced]
 ---
 
 # HTML for the win

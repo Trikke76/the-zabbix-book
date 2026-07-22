@@ -1,7 +1,8 @@
 ---
 description: |
-    short seo description
-tags: [beginner]
+    Learn how to configure ClickHouse for Zabbix to store history data, improve
+    performance, reduce database load and scale large monitoring environments.
+tags: [advanced]
 ---
 
 # Storing history data in ClickhouseDB

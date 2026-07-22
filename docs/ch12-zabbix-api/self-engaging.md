@@ -1,3 +1,10 @@
+---
+description: |
+    Discover some inside tips and tricks that will help you getting the best out
+    of Zabbix by making use of its API.
+tags: [expoert]
+---
+
 # Self-engaging
 
 Welcome to Zabbix API self engaging methods. All upcoming chapters will address
